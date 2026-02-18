@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Walter Ory — Radiant Arrays</title>
+  <meta name="description" content="Walter Ory creates Radiant Arrays — geometric light and shadow installations made from painted wood, nails, and light.">
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Custom cursor (hidden on touch devices via CSS) -->
+  <div class="cursor" id="cursor"></div>
+  <canvas class="cursor-trail" id="cursorTrail"></canvas>
+
+  <!-- Navigation -->
+  <nav id="mainNav">
+    <div class="nav-inner">
+      <a href="#hero" class="nav-logo">Walter Ory</a>
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span>
+      </button>
+      <div class="nav-links" id="navLinks">
+        <a href="#gallery" class="nav-link">Gallery</a>
+        <a href="#about" class="nav-link">About</a>
+        <a href="#contact" class="nav-link">Contact</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section id="hero">
+    <canvas id="heroCanvas"></canvas>
+    <div class="hero-content" id="heroContent">
+      <p class="hero-eyebrow">Radiant Arrays</p>
+      <h1 class="hero-title">Walter Ory</h1>
+      <p class="hero-tagline">Explorations of light, geometry &amp; shadow</p>
+      <a href="#gallery" class="hero-cta">View Works</a>
+    </div>
+    <div class="hero-scroll-indicator">
+      <div class="scroll-bar"></div>
+    </div>
+  </section>
+
+  <!-- Gallery -->
+  <section id="gallery">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">Works</h2>
+        <div class="filter-group" role="group" aria-label="Filter artworks">
+          <button class="filter-btn active" data-filter="all">All</button>
+          <button class="filter-btn" data-filter="available">Available</button>
+          <button class="filter-btn" data-filter="sold">Sold</button>
+        </div>
+      </div>
+      <div class="gallery-grid" id="galleryGrid">
+        <!-- Cards injected by script.js -->
+      </div>
+    </div>
+  </section>
+
+  <!-- About -->
+  <section id="about">
+    <div class="container">
+      <div class="about-layout">
+        <div class="about-visual">
+          <!--
+            ARTIST PHOTO PLACEHOLDER
+            To add your photo: replace this div with:
+            <img src="images/walter-ory.jpg" alt="Walter Ory" class="about-photo">
+          -->
+          <div class="photo-placeholder">
+            <div class="placeholder-inner">
+              <svg class="placeholder-icon" viewBox="0 0 60 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="30" cy="18" r="10" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M8 72c0-12.15 9.85-22 22-22s22 9.85 22 22" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+              <span>Artist Photo</span>
+              <small>Replace with: images/walter-ory.jpg</small>
+            </div>
+          </div>
+        </div>
+        <div class="about-content">
+          <p class="section-eyebrow">About</p>
+          <h2 class="about-name">Walter Ory</h2>
+          <p class="about-text">My work explores how light transforms simple geometry into something expansive and alive. Using repeated forms and precise patterns, each piece becomes a field of shifting shadow and illumination. What begins as structure opens into radiance.</p>
+          <div class="about-contact">
+            <a href="https://instagram.com/radiantarrays" target="_blank" rel="noopener" class="about-contact-link">
+              <span class="contact-label">Instagram</span>
+              <span>@radiantarrays</span>
+            </a>
+            <a href="mailto:radiantarrays@gmail.com" class="about-contact-link">
+              <span class="contact-label">Email</span>
+              <span>radiantarrays@gmail.com</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact -->
+  <section id="contact">
+    <div class="container">
+      <div class="contact-inner">
+        <h2 class="section-title">Get in Touch</h2>
+        <p class="contact-sub">For inquiries, exhibitions &amp; commissions</p>
+        <div class="contact-methods">
+          <a href="mailto:radiantarrays@gmail.com" class="contact-method">
+            <span class="method-label">Email</span>
+            <span class="method-value">radiantarrays@gmail.com</span>
+          </a>
+          <a href="https://instagram.com/radiantarrays" target="_blank" rel="noopener" class="contact-method">
+            <span class="method-label">Instagram</span>
+            <span class="method-value">@radiantarrays</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="footer-inner">
+        <p class="footer-name">Walter Ory — Radiant Arrays</p>
+        <p class="footer-copy">&copy; <span id="year"></span>. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ===================== LIGHTBOX ===================== -->
+  <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Artwork viewer">
+    <button class="lb-close" id="lbClose" aria-label="Close">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+    <button class="lb-nav lb-prev" id="lbPrev" aria-label="Previous artwork">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+    </button>
+    <button class="lb-nav lb-next" id="lbNext" aria-label="Next artwork">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="9 6 15 12 9 18"/>
+      </svg>
+    </button>
+
+    <div class="lb-body">
+      <!-- Image area -->
+      <div class="lb-view">
+        <div class="lb-image-wrap" id="lbImageWrap">
+          <!-- Content injected by JS -->
+        </div>
+        <p class="lb-hint">Scroll to zoom &nbsp;·&nbsp; Drag to pan &nbsp;·&nbsp; Double-click to reset</p>
+      </div>
+
+      <!-- Info panel -->
+      <div class="lb-panel">
+        <div class="lb-info">
+          <h3 class="lb-title" id="lbTitle"></h3>
+          <dl class="lb-details" id="lbDetails"></dl>
+          <div class="lb-status" id="lbStatus"></div>
+        </div>
+        <div class="lb-size-viz">
+          <p class="viz-label">Scale Reference</p>
+          <div id="sizeVizContainer"></div>
+        </div>
+        <button class="inquire-btn" id="inquireBtn">Inquire About This Piece</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== INQUIRY MODAL ===================== -->
+  <div class="inquiry-overlay" id="inquiryOverlay"></div>
+  <div class="inquiry-modal" id="inquiryModal" role="dialog" aria-modal="true" aria-labelledby="inquiryHeading">
+    <button class="inquiry-close" id="inquiryClose" aria-label="Close">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+    <h3 class="inquiry-heading" id="inquiryHeading">Inquire</h3>
+    <p class="inquiry-piece" id="inquiryPiece"></p>
+    <form class="inquiry-form" id="inquiryForm" novalidate>
+      <div class="field">
+        <label class="field-label" for="inqName">Your Name</label>
+        <input type="text" id="inqName" name="name" autocomplete="name" placeholder="Name" required>
+      </div>
+      <div class="field">
+        <label class="field-label" for="inqEmail">Email Address</label>
+        <input type="email" id="inqEmail" name="email" autocomplete="email" placeholder="email@example.com" required>
+      </div>
+      <div class="field">
+        <label class="field-label" for="inqMsg">Message</label>
+        <textarea id="inqMsg" name="message" rows="4" placeholder="I'm interested in this work…"></textarea>
+      </div>
+      <button type="submit" class="inquiry-submit">Send Inquiry</button>
+    </form>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
