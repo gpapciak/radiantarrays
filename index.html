@@ -25,6 +25,7 @@
       </button>
       <div class="nav-links" id="navLinks">
         <a href="#gallery" class="nav-link">Gallery</a>
+        <a href="#visualize" class="nav-link">Visualize</a>
         <a href="#process" class="nav-link">Process</a>
         <a href="#about" class="nav-link">About</a>
         <a href="#contact" class="nav-link">Contact</a>
@@ -61,6 +62,73 @@
         <!-- Cards injected by script.js -->
       </div>
     </div>
+  </section>
+
+  <!-- Visualize -->
+  <section id="visualize">
+    <div class="visualize-inner">
+
+      <div class="visualize-header">
+        <p class="visualize-eyebrow">Studio Tool</p>
+        <h2 class="visualize-title">Visualize in your space</h2>
+        <p class="visualize-sub"><em>Each work is made to order. Explore how light and surface colour respond to your environment.</em></p>
+      </div>
+
+      <div class="visualize-main">
+
+        <!-- Canvas display + toggle -->
+        <div class="visualize-canvas-wrap">
+          <canvas id="visualizeCanvas" aria-label="Artwork color visualization"></canvas>
+
+          <div class="light-toggle-wrap">
+            <span class="toggle-label">Light Off</span>
+            <label class="toggle-switch" aria-label="Toggle artwork light">
+              <input type="checkbox" id="lightToggle" role="switch">
+              <span class="toggle-track"><span class="toggle-thumb"></span></span>
+            </label>
+            <span class="toggle-label">Light On</span>
+          </div>
+        </div>
+
+        <!-- Colour controls -->
+        <div class="visualize-controls">
+
+          <div class="color-pickers">
+            <div class="picker-group">
+              <label class="picker-label" for="wallColorPicker">Wall Colour</label>
+              <div class="picker-row">
+                <input type="color" id="wallColorPicker" value="#f5f0e8">
+                <span class="picker-hex" id="wallColorHex">#f5f0e8</span>
+              </div>
+            </div>
+            <div class="picker-group">
+              <label class="picker-label" for="surfaceColorPicker">Surface Colour</label>
+              <div class="picker-row">
+                <input type="color" id="surfaceColorPicker" value="#e8d4a8">
+                <span class="picker-hex" id="surfaceColorHex">#e8d4a8</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="presets-group">
+            <p class="presets-label">Wall Presets</p>
+            <div class="presets-row">
+              <button class="preset-swatch active" data-color="#f5f0e8" title="Warm White" style="background:#f5f0e8;"></button>
+              <button class="preset-swatch" data-color="#c8cdd4" title="Cool Grey" style="background:#c8cdd4;"></button>
+              <button class="preset-swatch" data-color="#2e2e2e" title="Deep Charcoal" style="background:#2e2e2e;"></button>
+              <button class="preset-swatch" data-color="#8fa98a" title="Sage Green" style="background:#8fa98a;"></button>
+              <button class="preset-swatch" data-color="#c4896a" title="Dusty Terracotta" style="background:#c4896a;"></button>
+              <button class="preset-swatch" data-color="#1e3050" title="Navy" style="background:#1e3050;"></button>
+            </div>
+          </div>
+
+          <p class="visualize-note"><a href="#contact">Enquire about a custom commission →</a></p>
+
+        </div><!-- end visualize-controls -->
+
+      </div><!-- end visualize-main -->
+
+    </div><!-- end visualize-inner -->
   </section>
 
   <!-- Process -->

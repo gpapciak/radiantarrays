@@ -861,6 +861,260 @@ document.addEventListener('keydown', (e) => {
 
 
 /* ======================================================
+   VISUALIZE — Canvas-based colour visualization tool
+   Uses BW images as luminosity masks to tint:
+     · Wall region (mid-tone pixels) with wallColor
+     · Surface region (bright pixels / lit wood) with surfaceColor
+     · Dark pixels (nails, deep shadows) are left unaffected
+   ====================================================== */
+(function initVisualize() {
+  const canvas = document.getElementById('visualizeCanvas');
+  if (!canvas) return;
+
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+  /* --- Rendering resolution cap (performance vs quality) --- */
+  const MAX_DIM = 1200;
+
+  /* --- State --- */
+  const vizState = {
+    wallColor:    { r: 245, g: 240, b: 232 }, // #f5f0e8 warm white
+    surfaceColor: { r: 232, g: 212, b: 168 }, // #e8d4a8 warm cream
+    lightOn: false,
+    loaded: false,
+  };
+
+  const pixelData = {}; // keyed: offColor | onColor | offBW | onBW
+  let outImageData = null;
+  let CW = 0, CH = 0;
+
+  /* --- Weight look-up tables (indexed by brightness 0–255) ---
+     wallLUT  : mid-tones only — wall texture region
+     surfLUT  : bright pixels — lit wood surface between nails
+     Dark pixels (nails / deep shadow) get weight ≈ 0 from both.      */
+  const wallLUT = new Float32Array(256);
+  const surfLUT = new Float32Array(256);
+
+  (function buildLUTs() {
+    const WALL_STR = 0.68;
+    const SURF_STR = 0.58;
+    for (let v = 0; v < 256; v++) {
+      const t1 = Math.max(0, Math.min(1, (v - 40) / 52));   // rise 40→92
+      const s1 = t1 * t1 * (3 - 2 * t1);
+      const t2 = Math.max(0, Math.min(1, (v - 155) / 57));  // fall 155→212
+      const s2 = t2 * t2 * (3 - 2 * t2);
+      wallLUT[v] = s1 * (1 - s2) * WALL_STR;
+
+      const t3 = Math.max(0, Math.min(1, (v - 148) / 52));  // rise 148→200
+      const s3 = t3 * t3 * (3 - 2 * t3);
+      const t4 = Math.max(0, Math.min(1, (v - 238) / 17));  // fall 238→255
+      const s4 = t4 * t4 * (3 - 2 * t4);
+      surfLUT[v] = s3 * (1 - s4) * SURF_STR;
+    }
+  }());
+
+  /* --- Hex → RGB --- */
+  function hexToRgb(hex) {
+    return {
+      r: parseInt(hex.slice(1, 3), 16),
+      g: parseInt(hex.slice(3, 5), 16),
+      b: parseInt(hex.slice(5, 7), 16),
+    };
+  }
+
+  /* --- Initial dark canvas placeholder --- */
+  canvas.width  = 860;
+  canvas.height = 860;
+  ctx.fillStyle = '#0a0a0a';
+  ctx.fillRect(0, 0, 860, 860);
+
+  /* --- Load all four images --- */
+  function loadImages() {
+    const SRC = {
+      offColor: 'images/light-off-color.jpg',
+      onColor:  'images/light-on-color.jpg',
+      offBW:    'images/light-off-bw.jpg',
+      onBW:     'images/light-on-bw.jpg',
+    };
+
+    const loadOne = (key, url) => new Promise(resolve => {
+      const img = new Image();
+      img.onload  = () => resolve({ key, img });
+      img.onerror = () => resolve({ key, img: null });
+      img.src = url;
+    });
+
+    Promise.all(
+      Object.entries(SRC).map(([k, v]) => loadOne(k, v))
+    ).then(results => {
+      /* Determine canvas pixel dimensions from the primary color image */
+      const primary = results.find(r => r.key === 'offColor' && r.img)
+                   || results.find(r => r.key === 'onColor'  && r.img);
+      if (!primary) return; // images not found — leave dark placeholder
+
+      const nw    = primary.img.naturalWidth;
+      const nh    = primary.img.naturalHeight;
+      const scale = Math.min(1, MAX_DIM / Math.max(nw, nh));
+      CW = Math.round(nw * scale);
+      CH = Math.round(nh * scale);
+
+      canvas.width  = CW;
+      canvas.height = CH;
+      outImageData  = ctx.createImageData(CW, CH);
+
+      /* Draw each image into a temp canvas at CW×CH to extract ImageData */
+      const tmp    = document.createElement('canvas');
+      tmp.width    = CW;
+      tmp.height   = CH;
+      const tmpCtx = tmp.getContext('2d', { willReadFrequently: true });
+
+      results.forEach(({ key, img }) => {
+        if (!img) { pixelData[key] = null; return; }
+        tmpCtx.clearRect(0, 0, CW, CH);
+        tmpCtx.drawImage(img, 0, 0, CW, CH);
+        pixelData[key] = tmpCtx.getImageData(0, 0, CW, CH);
+      });
+
+      vizState.loaded = true;
+      render();
+    });
+  }
+
+  /* --- Render: apply colour tints using BW mask as luminosity guide --- */
+  let renderPending = false;
+
+  function scheduleRender() {
+    if (renderPending) return;
+    renderPending = true;
+    requestAnimationFrame(() => { renderPending = false; render(); });
+  }
+
+  function render() {
+    if (!vizState.loaded) return;
+
+    const colorKey = vizState.lightOn ? 'onColor' : 'offColor';
+    const bwKey    = vizState.lightOn ? 'onBW'    : 'offBW';
+    const colorPD  = pixelData[colorKey];
+    const bwPD     = pixelData[bwKey];
+
+    if (!colorPD) return;
+
+    const src = colorPD.data;
+    const bw  = bwPD ? bwPD.data : null;
+    const out = outImageData.data;
+
+    /* Extract tint channel values once (avoids repeated object lookups) */
+    const wR = vizState.wallColor.r,    wG = vizState.wallColor.g,    wB = vizState.wallColor.b;
+    const sR = vizState.surfaceColor.r, sG = vizState.surfaceColor.g, sB = vizState.surfaceColor.b;
+
+    const n = src.length;
+
+    if (bw) {
+      for (let i = 0; i < n; i += 4) {
+        let r = src[i];
+        let g = src[i + 1];
+        let b = src[i + 2];
+
+        /* BW luminance — greyscale images have equal R/G/B channels */
+        const lum   = bw[i];
+        const wallW = wallLUT[lum];
+        const surfW = surfLUT[lum];
+
+        /* Multiply-blend tint lerped by region weight:
+           result = original + weight × (original × tintFactor − original)
+           Multiply only darkens, so output is always within [0, original]. */
+        if (wallW > 0.002) {
+          r = r + wallW * ((r * wR / 255) - r);
+          g = g + wallW * ((g * wG / 255) - g);
+          b = b + wallW * ((b * wB / 255) - b);
+        }
+        if (surfW > 0.002) {
+          r = r + surfW * ((r * sR / 255) - r);
+          g = g + surfW * ((g * sG / 255) - g);
+          b = b + surfW * ((b * sB / 255) - b);
+        }
+
+        /* Fast round (multiply only reduces, so values stay 0–255) */
+        out[i]     = (r + 0.5) | 0;
+        out[i + 1] = (g + 0.5) | 0;
+        out[i + 2] = (b + 0.5) | 0;
+        out[i + 3] = src[i + 3];
+      }
+    } else {
+      /* No BW mask available — copy color image unchanged */
+      for (let i = 0; i < n; i++) out[i] = src[i];
+    }
+
+    ctx.putImageData(outImageData, 0, 0);
+  }
+
+  /* --- UI controls --- */
+  function bindControls() {
+    const wallPicker  = document.getElementById('wallColorPicker');
+    const surfPicker  = document.getElementById('surfaceColorPicker');
+    const wallHexEl   = document.getElementById('wallColorHex');
+    const surfHexEl   = document.getElementById('surfaceColorHex');
+    const lightToggle = document.getElementById('lightToggle');
+
+    if (wallPicker) {
+      wallPicker.addEventListener('input', e => {
+        vizState.wallColor = hexToRgb(e.target.value);
+        if (wallHexEl) wallHexEl.textContent = e.target.value;
+        updateActivePreset(e.target.value);
+        scheduleRender();
+      });
+    }
+
+    if (surfPicker) {
+      surfPicker.addEventListener('input', e => {
+        vizState.surfaceColor = hexToRgb(e.target.value);
+        if (surfHexEl) surfHexEl.textContent = e.target.value;
+        scheduleRender();
+      });
+    }
+
+    /* Light toggle — cross-fade between states */
+    let toggleTimer = null;
+    if (lightToggle) {
+      lightToggle.addEventListener('change', e => {
+        vizState.lightOn = e.target.checked;
+        canvas.style.opacity = '0';
+        clearTimeout(toggleTimer);
+        toggleTimer = setTimeout(() => {
+          render();
+          canvas.style.opacity = '1';
+        }, 280);
+      });
+    }
+
+    /* Preset wall colour swatches */
+    document.querySelectorAll('.preset-swatch').forEach(sw => {
+      sw.addEventListener('click', () => {
+        const hex = sw.dataset.color;
+        if (wallPicker) wallPicker.value = hex;
+        vizState.wallColor = hexToRgb(hex);
+        if (wallHexEl) wallHexEl.textContent = hex;
+        updateActivePreset(hex);
+        scheduleRender();
+      });
+    });
+
+    updateActivePreset('#f5f0e8'); // warm white is default active
+  }
+
+  function updateActivePreset(hex) {
+    const norm = hex.toLowerCase();
+    document.querySelectorAll('.preset-swatch').forEach(sw => {
+      sw.classList.toggle('active', sw.dataset.color.toLowerCase() === norm);
+    });
+  }
+
+  bindControls();
+  loadImages();
+}());
+
+
+/* ======================================================
    MISC — Footer year, scroll-reveal for non-gallery sections
    ====================================================== */
 (function misc() {
