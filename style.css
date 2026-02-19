@@ -179,7 +179,7 @@ button { font-family: var(--sans); }
 }
 
 .hero-eyebrow {
-  font-size: 0.68rem;
+  font-size: 1.23rem;
   font-weight: 400;
   letter-spacing: 0.32em;
   text-transform: uppercase;
@@ -191,7 +191,7 @@ button { font-family: var(--sans); }
 
 .hero-title {
   font-family: var(--serif);
-  font-size: clamp(3.8rem, 9vw, 9rem);
+  font-size: clamp(3.2rem, 7.5vw, 7.5rem);
   font-weight: 300;
   letter-spacing: -0.015em;
   line-height: 0.88;
@@ -440,6 +440,11 @@ section { padding: 120px 0; }
 .card-status.available::before { background: var(--green); }
 .card-status.sold { color: var(--text-muted); }
 .card-status.sold::before { background: var(--text-muted); }
+
+/* Radiant Dialogue — taller card in gallery */
+.artwork-card[data-id="4"] .card-image {
+  aspect-ratio: 4 / 3;
+}
 
 /* ======================== LIGHTBOX ======================== */
 .lightbox {
@@ -768,6 +773,182 @@ section { padding: 120px 0; }
   padding: 20px 0;
 }
 
+/* ======================== PROCESS ======================== */
+#process {
+  background: #0b0b0b;
+}
+
+.process-section {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 48px;
+}
+
+.process-label {
+  font-family: 'Inconsolata', monospace;
+  font-size: 11px;
+  font-weight: 300;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 60px;
+}
+
+.process-title {
+  font-family: var(--serif);
+  font-size: clamp(2.2rem, 5vw, 3.8rem);
+  font-weight: 300;
+  font-style: italic;
+  line-height: 1.15;
+  margin-bottom: 50px;
+  max-width: 700px;
+}
+
+.process-intro {
+  font-family: var(--serif);
+  font-size: 1.25rem;
+  font-weight: 300;
+  line-height: 1.85;
+  max-width: 640px;
+  color: rgba(232, 227, 218, 0.72);
+  margin-bottom: 100px;
+}
+.process-intro em {
+  font-style: italic;
+  color: var(--text);
+}
+
+/* Drawing grids */
+.drawings-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+  margin-bottom: 80px;
+  background: #1a1a1a;
+}
+
+.drawing-cell {
+  background: #0b0b0b;
+  padding: 40px 30px 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.drawing-cell svg {
+  width: 100%;
+  max-width: 220px;
+  height: 200px;
+}
+
+.drawing-label {
+  font-family: 'Inconsolata', monospace;
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-top: 20px;
+  text-align: center;
+}
+
+.drawings-grid-wide {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2px;
+  margin-bottom: 80px;
+  background: #1a1a1a;
+}
+
+.drawing-cell-wide {
+  background: #0b0b0b;
+  padding: 40px 50px 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.drawing-cell-wide svg {
+  width: 100%;
+  max-width: 340px;
+  height: 220px;
+}
+
+/* Process body text */
+.process-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  margin-bottom: 100px;
+}
+
+.process-body p {
+  font-family: var(--serif);
+  font-size: 1.1rem;
+  font-weight: 300;
+  line-height: 1.9;
+  color: rgba(232, 227, 218, 0.62);
+}
+.process-body p em {
+  color: var(--text);
+  font-style: italic;
+}
+
+/* LED section */
+.led-section {
+  border-top: 1px solid var(--border);
+  padding-top: 80px;
+  margin-bottom: 0;
+}
+
+.led-title {
+  font-family: var(--serif);
+  font-size: clamp(1.6rem, 3vw, 2.4rem);
+  font-weight: 300;
+  font-style: italic;
+  margin-bottom: 40px;
+}
+
+.led-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  background: #1a1a1a;
+  margin-bottom: 50px;
+}
+
+.led-cell {
+  background: #0b0b0b;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.led-cell svg {
+  width: 100%;
+  max-width: 300px;
+  height: 200px;
+}
+
+.led-text {
+  font-family: var(--serif);
+  font-size: 1.1rem;
+  font-weight: 300;
+  line-height: 1.9;
+  color: rgba(232, 227, 218, 0.62);
+  max-width: 640px;
+}
+.led-text em {
+  color: var(--text);
+  font-style: italic;
+}
+
+/* SVG architectural drawings — white paper style */
+.arch-drawing {
+  background: #fff;
+  display: block;
+}
+
 /* ======================== ABOUT ======================== */
 #about {
   background: #0b0b0b;
@@ -928,6 +1109,7 @@ footer {
   .about-layout { grid-template-columns: 1fr; gap: 48px; }
   .about-visual { max-width: 420px; }
   .lb-panel { width: 264px; min-width: 264px; padding: 80px 24px 32px; }
+  .drawings-grid { grid-template-columns: 1fr 1fr; }
 }
 
 @media (max-width: 768px) {
@@ -950,6 +1132,12 @@ footer {
   .nav-toggle { display: flex; }
 
   .gallery-grid { columns: 1; }
+  .process-section { padding: 0 24px; }
+  .drawings-grid,
+  .drawings-grid-wide,
+  .led-grid { grid-template-columns: 1fr; }
+  .process-body { grid-template-columns: 1fr; gap: 30px; }
+  .drawing-cell-wide { padding: 32px 24px 24px; }
 
   .section-header { flex-direction: column; align-items: flex-start; gap: 20px; }
 

@@ -19,7 +19,7 @@ const ARTWORKS = [
     dimensions: '95cm × 78cm',
     w: 95, h: 78, isCircle: false,
     available: true,
-    image: '', // ← Replace with: 'images/singularity-field.jpg'
+    image: 'images/singularity-field.jpg',
   },
   {
     id: 1,
@@ -29,7 +29,7 @@ const ARTWORKS = [
     dimensions: '46cm diameter',
     w: 46, h: 46, isCircle: true,
     available: true,
-    image: '', // ← Replace with: 'images/chromatic-wheel.jpg'
+    image: 'images/chromatic-wheel.jpg',
   },
   {
     id: 2,
@@ -39,7 +39,7 @@ const ARTWORKS = [
     dimensions: '46cm diameter',
     w: 46, h: 46, isCircle: true,
     available: true,
-    image: '', // ← Replace with: 'images/oxide-spirals.jpg'
+    image: 'images/oxide-spirals.jpg',
   },
   {
     id: 3,
@@ -49,17 +49,7 @@ const ARTWORKS = [
     dimensions: '80cm × 80cm',
     w: 80, h: 80, isCircle: false,
     available: true,
-    image: '', // ← Replace with: 'images/convergence-chamber.jpg'
-  },
-  {
-    id: 4,
-    title: 'Radiant Dialogue',
-    year: 2022,
-    medium: 'Mixed media',
-    dimensions: '120cm × 60cm',
-    w: 120, h: 60, isCircle: false,
-    available: true,
-    image: '', // ← Replace with: 'images/radiant-dialogue.jpg'
+    image: 'images/convergence-chamber.jpg',
   },
   {
     id: 5,
@@ -69,7 +59,17 @@ const ARTWORKS = [
     dimensions: '46cm diameter',
     w: 46, h: 46, isCircle: true,
     available: true,
-    image: '', // ← Replace with: 'images/radiant-axis.jpg'
+    image: 'images/radiant-axis.jpg',
+  },
+  {
+    id: 4,
+    title: 'Radiant Dialogue',
+    year: 2022,
+    medium: 'Mixed media',
+    dimensions: '120cm × 60cm',
+    w: 120, h: 60, isCircle: false,
+    available: true,
+    image: 'images/radiant-dialogue.jpg',
   },
   {
     id: 6,
@@ -79,7 +79,7 @@ const ARTWORKS = [
     dimensions: '61cm diameter',
     w: 61, h: 61, isCircle: true,
     available: false,
-    image: '', // ← Replace with: 'images/refraction-hexadecagon.jpg'
+    image: 'images/refraction-hexadecagon.jpg',
   },
   {
     id: 7,
@@ -89,7 +89,17 @@ const ARTWORKS = [
     dimensions: '60cm × 60cm',
     w: 60, h: 60, isCircle: false,
     available: true,
-    image: '', // ← Replace with: 'images/circular-radiants-2.jpg'
+    image: 'images/circular-radiants-2.jpg',
+  },
+  {
+    id: 8,
+    title: 'Bilateral Radiance',
+    year: 2025,
+    medium: 'Mixed media',
+    dimensions: '61cm diameter',
+    w: 61, h: 61, isCircle: true,
+    available: true,
+    image: 'images/bilateral-radiance.jpg',
   },
 ];
 
