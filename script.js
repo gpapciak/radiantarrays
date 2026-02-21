@@ -862,8 +862,8 @@ document.addEventListener('keydown', (e) => {
 
 /* ======================================================
    VISUALIZE — Illustration-based colour tool
-   Loads two PNG illustrations (light off / on) and applies
-   colour tints via pixel-level multiply blend:
+   Loads the no-light PNG illustration and applies colour
+   tints via pixel-level multiply blend:
      · Pure white pixels OUTSIDE the circle → wall colour
      · Pure white pixels INSIDE  the circle → surface colour
      · All other pixels (black, grey) → unchanged
@@ -881,13 +881,11 @@ document.addEventListener('keydown', (e) => {
   const vizState = {
     wallColor:    { r: 245, g: 240, b: 232 }, // #F5F0E8 warm white
     surfaceColor: { r: 245, g: 240, b: 232 }, // #F5F0E8 warm white
-    lightOn: false,
     loaded: false,
   };
 
-  let pixelsOff  = null;   // ImageData for visualize-no-light.png
-  let pixelsOn   = null;   // ImageData for visualize-with-light.png
-  let insideMask = null;   // Uint8Array — 1 = inside circle, 0 = outside
+  let pixelsOff    = null;   // ImageData for visualize-no-light.png
+  let insideMask   = null;   // Uint8Array — 1 = inside circle, 0 = outside
   let outImageData = null;
   let CW = 0, CH = 0;
   let renderPending = false;
@@ -907,53 +905,38 @@ document.addEventListener('keydown', (e) => {
   ctx.fillStyle = '#0f0f0f';
   ctx.fillRect(0, 0, 800, 800);
 
-  /* --- Load both illustration PNGs --- */
+  /* --- Load the single illustration PNG --- */
   function loadImages() {
-    let doneCount = 0;
     const tmp    = document.createElement('canvas');
     const tmpCtx = tmp.getContext('2d', { willReadFrequently: true });
+    const img    = new Image();
 
-    function onLoaded(key, img) {
-      if (img) {
-        /* Set canvas dimensions from first image that arrives */
-        if (CW === 0) {
-          const scale = Math.min(1, MAX_DIM / Math.max(img.naturalWidth, img.naturalHeight));
-          CW = Math.round(img.naturalWidth  * scale);
-          CH = Math.round(img.naturalHeight * scale);
-          canvas.width  = CW;
-          canvas.height = CH;
-          outImageData  = ctx.createImageData(CW, CH);
-          tmp.width  = CW;
-          tmp.height = CH;
-        }
-        tmpCtx.clearRect(0, 0, CW, CH);
-        tmpCtx.drawImage(img, 0, 0, CW, CH);
-        if (key === 'off') pixelsOff = tmpCtx.getImageData(0, 0, CW, CH);
-        else               pixelsOn  = tmpCtx.getImageData(0, 0, CW, CH);
-      }
-      doneCount++;
-      if (doneCount === 2) {
-        buildCircleMask();
-        vizState.loaded = true;
-        render();
-      }
-    }
+    img.onload = () => {
+      const scale = Math.min(1, MAX_DIM / Math.max(img.naturalWidth, img.naturalHeight));
+      CW = Math.round(img.naturalWidth  * scale);
+      CH = Math.round(img.naturalHeight * scale);
+      canvas.width  = CW;
+      canvas.height = CH;
+      outImageData  = ctx.createImageData(CW, CH);
+      tmp.width  = CW;
+      tmp.height = CH;
 
-    ['off', 'on'].forEach(key => {
-      const img = new Image();
-      img.onload  = () => onLoaded(key, img);
-      img.onerror = () => onLoaded(key, null);
-      img.src = key === 'off' ? 'visualize-no-light.png' : 'visualize-with-light.png';
-    });
+      tmpCtx.drawImage(img, 0, 0, CW, CH);
+      pixelsOff = tmpCtx.getImageData(0, 0, CW, CH);
+
+      buildCircleMask();
+      vizState.loaded = true;
+      render();
+    };
+
+    img.onerror = () => console.warn('visualize-no-light.png failed to load');
+    img.src = 'visualize-no-light.png';
   }
 
-  /* --- Build inside/outside mask via flood fill seeded from the wall region ---
-     Always uses pixelsOff (no-light image) — it has a clean white wall with no
-     shadow lines. The with-light image has radiating shadow lines extending into
-     the wall area which would act as false barriers and corrupt the mask.
-     Seeds the BFS from the true image perimeter (INSET=0) since the images have
-     no solid black frame. The circle border acts as a closed barrier; every
-     reachable pixel is "outside" (wall). White pixels not reachable are inside. */
+  /* --- Build inside/outside mask via BFS flood fill from the wall region ---
+     Seeds from the image perimeter (no black outer frame on this PNG).
+     The circle border acts as a closed barrier; every reachable pixel is
+     "outside" (wall). White pixels not reachable are inside the circle. */
   function buildCircleMask() {
     const src = pixelsOff;
     if (!src) return;
@@ -1021,10 +1004,7 @@ document.addEventListener('keydown', (e) => {
   function render() {
     if (!vizState.loaded) return;
 
-    const pixels = vizState.lightOn ? pixelsOn : pixelsOff;
-    if (!pixels) return;
-
-    const src = pixels.data;
+    const src = pixelsOff.data;
     const out = outImageData.data;
     const wR = vizState.wallColor.r,    wG = vizState.wallColor.g,    wB = vizState.wallColor.b;
     const sR = vizState.surfaceColor.r, sG = vizState.surfaceColor.g, sB = vizState.surfaceColor.b;
@@ -1061,12 +1041,10 @@ document.addEventListener('keydown', (e) => {
 
   /* --- UI controls --- */
   function bindControls() {
-    const wallPicker  = document.getElementById('wallColorPicker');
-    const surfPicker  = document.getElementById('surfaceColorPicker');
-    const wallHexEl   = document.getElementById('wallColorHex');
-    const surfHexEl   = document.getElementById('surfaceColorHex');
-    const toggleBtn   = document.getElementById('lightToggleBtn');
-    const toggleLabel = document.getElementById('lightToggleLabel');
+    const wallPicker = document.getElementById('wallColorPicker');
+    const surfPicker = document.getElementById('surfaceColorPicker');
+    const wallHexEl  = document.getElementById('wallColorHex');
+    const surfHexEl  = document.getElementById('surfaceColorHex');
 
     if (wallPicker) {
       wallPicker.addEventListener('input', e => {
@@ -1085,24 +1063,6 @@ document.addEventListener('keydown', (e) => {
         if (surfHexEl) surfHexEl.textContent = hex.toUpperCase();
         updateActiveSwatches('surface', hex);
         scheduleRender();
-      });
-    }
-
-    /* Light toggle button — fade out, swap illustration, fade in */
-    let fadeTimer = null;
-    if (toggleBtn) {
-      toggleBtn.addEventListener('click', () => {
-        vizState.lightOn = !vizState.lightOn;
-        toggleBtn.setAttribute('aria-pressed', String(vizState.lightOn));
-        toggleBtn.classList.toggle('light-on', vizState.lightOn);
-        if (toggleLabel) toggleLabel.textContent = vizState.lightOn ? 'Light On' : 'Light Off';
-
-        canvas.style.opacity = '0';
-        clearTimeout(fadeTimer);
-        fadeTimer = setTimeout(() => {
-          render();
-          canvas.style.opacity = '1';
-        }, 220);
       });
     }
 
@@ -1140,6 +1100,216 @@ document.addEventListener('keydown', (e) => {
 
   bindControls();
   loadImages();
+}());
+
+
+/* ======================================================
+   AMBIENT SOUND — Web Audio API layered texture
+   Three layers: low drone + mid shimmer + crystalline sparks.
+   Muted by default. Small button fixed bottom-right.
+   Fades in / out over 3 s. Session preference remembered.
+   No external files — entirely programmatic.
+   ====================================================== */
+(function initAmbientSound() {
+  const btn      = document.getElementById('soundBtn');
+  const label    = document.getElementById('soundLabel');
+  const iconOff  = document.getElementById('soundIconMuted');
+  const iconOn   = document.getElementById('soundIconPlaying');
+  if (!btn) return;
+
+  let audioCtx    = null;
+  let masterGain  = null;
+  let isPlaying   = false;
+  let crystalTimer = null;
+  const FADE      = 3.0; // fade duration in seconds
+
+  /* --- Build audio graph (deferred until first use) --- */
+  function initAudio() {
+    if (audioCtx) return;
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    /* Master gain — ramped 0→1 / 1→0 for mute toggle */
+    masterGain = audioCtx.createGain();
+    masterGain.gain.value = 0;
+    masterGain.connect(audioCtx.destination);
+
+    /* Spatial reverb: 4 s convolver with exponential noise decay */
+    const conv  = audioCtx.createConvolver();
+    const irLen = Math.floor(audioCtx.sampleRate * 4.0);
+    const ir    = audioCtx.createBuffer(2, irLen, audioCtx.sampleRate);
+    for (let ch = 0; ch < 2; ch++) {
+      const d = ir.getChannelData(ch);
+      for (let i = 0; i < irLen; i++) {
+        d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / irLen, 2.2);
+      }
+    }
+    conv.buffer = ir;
+
+    /* Dry/wet into master — 55 % direct, 45 % reverbed */
+    const dryGain = audioCtx.createGain(); dryGain.gain.value = 0.55;
+    const wetGain = audioCtx.createGain(); wetGain.gain.value = 0.45;
+    dryGain.connect(masterGain);
+    wetGain.connect(masterGain);
+    conv.connect(wetGain);
+
+    /* Pre-master level: "gallery ambient, not concert" */
+    const preMaster = audioCtx.createGain();
+    preMaster.gain.value = 0.13;
+    preMaster.connect(dryGain);
+    preMaster.connect(conv);
+
+    /* ── LAYER 1: low fundamental drone (~70 Hz) ──────────────────
+       Breathing LFO at 0.125 Hz (8-second rise/fall cycle).
+       gain1 base = 0.72, LFO depth ±0.28  →  range 0.44–1.00      */
+    const osc1  = audioCtx.createOscillator();
+    const gain1 = audioCtx.createGain();
+    osc1.type            = 'sine';
+    osc1.frequency.value = 70;
+    gain1.gain.value     = 0.72;
+
+    const lfo1  = audioCtx.createOscillator();
+    const lfoA1 = audioCtx.createGain();
+    lfo1.type            = 'sine';
+    lfo1.frequency.value = 0.125; // 8-second breath
+    lfoA1.gain.value     = 0.28;
+    lfo1.connect(lfoA1);
+    lfoA1.connect(gain1.gain);
+
+    osc1.connect(gain1);
+    gain1.connect(preMaster);
+    lfo1.start();
+    osc1.start();
+
+    /* ── LAYER 2: mid harmonic (~280 Hz, 2 octaves up) ────────────
+       Two oscillators detuned ±9 cents — slow beating / shimmer.
+       Separate LFO at 0.09 Hz (~11 s) for polyrhythmic swell.      */
+    const gain2 = audioCtx.createGain();
+    gain2.gain.value = 0.48;
+
+    const osc2a = audioCtx.createOscillator();
+    const ogn2a = audioCtx.createGain();
+    osc2a.type            = 'sine';
+    osc2a.frequency.value = 280;
+    osc2a.detune.value    = -9;
+    ogn2a.gain.value      = 0.55;
+    osc2a.connect(ogn2a);
+    ogn2a.connect(gain2);
+
+    const osc2b = audioCtx.createOscillator();
+    const ogn2b = audioCtx.createGain();
+    osc2b.type            = 'sine';
+    osc2b.frequency.value = 280;
+    osc2b.detune.value    = +9;
+    ogn2b.gain.value      = 0.55;
+    osc2b.connect(ogn2b);
+    ogn2b.connect(gain2);
+
+    const lfo2  = audioCtx.createOscillator();
+    const lfoA2 = audioCtx.createGain();
+    lfo2.type            = 'sine';
+    lfo2.frequency.value = 0.09; // ~11-second swell
+    lfoA2.gain.value     = 0.18;
+    lfo2.connect(lfoA2);
+    lfoA2.connect(gain2.gain);
+
+    gain2.connect(preMaster);
+    lfo2.start();
+    osc2a.start();
+    osc2b.start();
+
+    /* ── LAYER 3: crystalline overtones (sparse, unpredictable) ───
+       Brief sine tones at high harmonics of 70 Hz — like light
+       catching a nail head. Appear every 4–12 seconds at random.   */
+    const crystalBus = audioCtx.createGain();
+    crystalBus.gain.value = 0.55;
+    crystalBus.connect(preMaster);
+
+    const CRYSTAL_FREQS = [1120, 1260, 1400, 1540, 1680, 1960, 2240];
+
+    function spawnOvertone() {
+      if (!audioCtx) return;
+      const freq    = CRYSTAL_FREQS[Math.floor(Math.random() * CRYSTAL_FREQS.length)];
+      const sustain = 0.15 + Math.random() * 0.55;   // 0.15–0.70 s
+      const attack  = 0.04;
+      const release = 0.55 + Math.random() * 0.45;   // 0.55–1.00 s
+      const peak    = 0.45 + Math.random() * 0.40;   // 0.45–0.85
+
+      const osc = audioCtx.createOscillator();
+      const env = audioCtx.createGain();
+      osc.type            = 'sine';
+      osc.frequency.value = freq;
+      osc.connect(env);
+      env.connect(crystalBus);
+
+      const t = audioCtx.currentTime;
+      env.gain.setValueAtTime(0, t);
+      env.gain.linearRampToValueAtTime(peak, t + attack);
+      env.gain.setValueAtTime(peak, t + attack + sustain);
+      env.gain.exponentialRampToValueAtTime(0.0001, t + attack + sustain + release);
+
+      osc.start(t);
+      osc.stop(t + attack + sustain + release + 0.15);
+
+      crystalTimer = setTimeout(spawnOvertone, 4000 + Math.random() * 8000);
+    }
+
+    // First spark after a short natural pause
+    crystalTimer = setTimeout(spawnOvertone, 2000 + Math.random() * 3000);
+  }
+
+  /* --- Fade helpers --- */
+  function enableSound() {
+    initAudio();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    const now = audioCtx.currentTime;
+    masterGain.gain.cancelScheduledValues(now);
+    masterGain.gain.setValueAtTime(masterGain.gain.value, now);
+    masterGain.gain.linearRampToValueAtTime(1, now + FADE);
+    isPlaying = true;
+    btn.classList.add('ambient-on');
+    btn.setAttribute('aria-pressed', 'true');
+    iconOff.style.display = 'none';
+    iconOn.style.display  = '';
+    if (label) label.textContent = 'ambient';
+    sessionStorage.setItem('ambientSound', '1');
+  }
+
+  function disableSound() {
+    if (!audioCtx) return;
+    const now = audioCtx.currentTime;
+    masterGain.gain.cancelScheduledValues(now);
+    masterGain.gain.setValueAtTime(masterGain.gain.value, now);
+    masterGain.gain.linearRampToValueAtTime(0, now + FADE);
+    isPlaying = false;
+    btn.classList.remove('ambient-on');
+    btn.setAttribute('aria-pressed', 'false');
+    iconOff.style.display = '';
+    iconOn.style.display  = 'none';
+    if (label) label.textContent = 'sound';
+    sessionStorage.setItem('ambientSound', '0');
+  }
+
+  /* --- Button --- */
+  btn.addEventListener('click', () => {
+    if (isPlaying) disableSound();
+    else           enableSound();
+  });
+  btn.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); btn.click(); }
+  });
+
+  /* --- Restore session preference on first interaction --- */
+  if (sessionStorage.getItem('ambientSound') === '1') {
+    function resumeAudio() {
+      document.removeEventListener('click',      resumeAudio);
+      document.removeEventListener('keydown',    resumeAudio);
+      document.removeEventListener('touchstart', resumeAudio);
+      if (!isPlaying) enableSound();
+    }
+    document.addEventListener('click',      resumeAudio);
+    document.addEventListener('keydown',    resumeAudio);
+    document.addEventListener('touchstart', resumeAudio, { passive: true });
+  }
 }());
 
 

@@ -1174,42 +1174,6 @@ footer {
   padding-top: 36px;
 }
 
-/* Light toggle button */
-.light-toggle-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  background: none;
-  border: 1px solid var(--border-mid);
-  color: var(--text-muted);
-  font-family: 'Inconsolata', monospace;
-  font-size: 11px;
-  font-weight: 300;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  padding: 11px 22px;
-  cursor: none;
-  transition: border-color var(--t), color var(--t), box-shadow var(--t);
-  align-self: flex-start;
-}
-
-.light-toggle-btn:hover {
-  border-color: var(--accent);
-  color: var(--accent);
-}
-
-.light-toggle-btn.light-on {
-  border-color: var(--accent);
-  color: var(--accent);
-  box-shadow: 0 0 16px var(--accent-glow);
-}
-
-.lt-icon {
-  width: 15px;
-  height: 15px;
-  flex-shrink: 0;
-}
-
 /* Colour pickers */
 .color-pickers {
   display: grid;
@@ -1295,6 +1259,16 @@ footer {
   box-shadow: 0 0 0 1.5px var(--accent);
 }
 
+/* Caveat line */
+.visualize-caveat {
+  font-family: var(--serif);
+  font-size: 1rem;
+  font-weight: 300;
+  font-style: italic;
+  color: rgba(232, 227, 218, 0.45);
+  line-height: 1.6;
+}
+
 /* Commission note */
 .visualize-note {
   font-family: var(--serif);
@@ -1311,6 +1285,72 @@ footer {
 
 .visualize-note a:hover {
   opacity: 0.7;
+}
+
+/* ======================== SOUND WIDGET ======================== */
+.sound-widget {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  z-index: 900;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+}
+
+.sound-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(32, 32, 32, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: rgba(255, 255, 255, 0.5);
+  cursor: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  flex-shrink: 0;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: border-color var(--t), color var(--t), box-shadow var(--t);
+}
+
+.sound-btn:hover {
+  border-color: rgba(201, 169, 110, 0.5);
+  color: var(--accent);
+}
+
+.sound-btn.ambient-on {
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: 0 0 14px var(--accent-glow);
+}
+
+.sound-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.sound-label {
+  font-family: 'Inconsolata', monospace;
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.3);
+  transition: color var(--t);
+  user-select: none;
+  pointer-events: none;
+}
+
+.sound-widget:hover .sound-label {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.sound-btn.ambient-on + .sound-label {
+  color: var(--accent);
 }
 
 /* ======================== RESPONSIVE ======================== */
