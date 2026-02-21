@@ -1287,6 +1287,56 @@ footer {
   opacity: 0.7;
 }
 
+/* ======================== INSTAGRAM ======================== */
+#instagram {
+  background: #0b0b0b;
+  border-top: 1px solid var(--border);
+  padding: 100px 0;
+  text-align: center;
+}
+
+.instagram-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.instagram-label {
+  font-family: 'Inconsolata', monospace;
+  font-size: 11px;
+  font-weight: 300;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.instagram-inner .instagram-handle {
+  font-family: var(--serif);
+  font-size: clamp(2rem, 5vw, 3.4rem);
+  font-weight: 300;
+  letter-spacing: 0.01em;
+  color: var(--text);
+  transition: color var(--t);
+}
+.instagram-inner .instagram-handle:hover { color: var(--accent); }
+
+.instagram-link {
+  font-size: 0.72rem;
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  padding-bottom: 2px;
+  margin-top: 8px;
+  transition: color var(--t), border-color var(--t);
+}
+.instagram-link:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
 /* ======================== SOUND WIDGET ======================== */
 .sound-widget {
   position: fixed;
