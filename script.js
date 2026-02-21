@@ -861,11 +861,12 @@ document.addEventListener('keydown', (e) => {
 
 
 /* ======================================================
-   VISUALIZE — Canvas-based colour visualization tool
-   Uses BW images as luminosity masks to tint:
-     · Wall region (mid-tone pixels) with wallColor
-     · Surface region (bright pixels / lit wood) with surfaceColor
-     · Dark pixels (nails, deep shadows) are left unaffected
+   VISUALIZE — Illustration-based colour tool
+   Loads two PNG illustrations (light off / on) and applies
+   colour tints via pixel-level multiply blend:
+     · Pure white pixels OUTSIDE the circle → wall colour
+     · Pure white pixels INSIDE  the circle → surface colour
+     · All other pixels (black, grey) → unchanged
    ====================================================== */
 (function initVisualize() {
   const canvas = document.getElementById('visualizeCanvas');
@@ -873,45 +874,23 @@ document.addEventListener('keydown', (e) => {
 
   const ctx = canvas.getContext('2d', { willReadFrequently: true });
 
-  /* --- Rendering resolution cap (performance vs quality) --- */
-  const MAX_DIM = 1200;
+  const MAX_DIM = 1600;
+  const WHITE_THRESHOLD = 238; // pixels with R,G,B >= this are treated as "pure white"
 
   /* --- State --- */
   const vizState = {
-    wallColor:    { r: 245, g: 240, b: 232 }, // #f5f0e8 warm white
-    surfaceColor: { r: 232, g: 212, b: 168 }, // #e8d4a8 warm cream
+    wallColor:    { r: 245, g: 240, b: 232 }, // #F5F0E8 warm white
+    surfaceColor: { r: 245, g: 240, b: 232 }, // #F5F0E8 warm white
     lightOn: false,
     loaded: false,
   };
 
-  const pixelData = {}; // keyed: offColor | onColor | offBW | onBW
+  let pixelsOff  = null;   // ImageData for visualize-no-light.png
+  let pixelsOn   = null;   // ImageData for visualize-with-light.png
+  let insideMask = null;   // Uint8Array — 1 = inside circle, 0 = outside
   let outImageData = null;
   let CW = 0, CH = 0;
-
-  /* --- Weight look-up tables (indexed by brightness 0–255) ---
-     wallLUT  : mid-tones only — wall texture region
-     surfLUT  : bright pixels — lit wood surface between nails
-     Dark pixels (nails / deep shadow) get weight ≈ 0 from both.      */
-  const wallLUT = new Float32Array(256);
-  const surfLUT = new Float32Array(256);
-
-  (function buildLUTs() {
-    const WALL_STR = 0.68;
-    const SURF_STR = 0.58;
-    for (let v = 0; v < 256; v++) {
-      const t1 = Math.max(0, Math.min(1, (v - 40) / 52));   // rise 40→92
-      const s1 = t1 * t1 * (3 - 2 * t1);
-      const t2 = Math.max(0, Math.min(1, (v - 155) / 57));  // fall 155→212
-      const s2 = t2 * t2 * (3 - 2 * t2);
-      wallLUT[v] = s1 * (1 - s2) * WALL_STR;
-
-      const t3 = Math.max(0, Math.min(1, (v - 148) / 52));  // rise 148→200
-      const s3 = t3 * t3 * (3 - 2 * t3);
-      const t4 = Math.max(0, Math.min(1, (v - 238) / 17));  // fall 238→255
-      const s4 = t4 * t4 * (3 - 2 * t4);
-      surfLUT[v] = s3 * (1 - s4) * SURF_STR;
-    }
-  }());
+  let renderPending = false;
 
   /* --- Hex → RGB --- */
   function hexToRgb(hex) {
@@ -922,67 +901,117 @@ document.addEventListener('keydown', (e) => {
     };
   }
 
-  /* --- Initial dark canvas placeholder --- */
-  canvas.width  = 860;
-  canvas.height = 860;
-  ctx.fillStyle = '#0a0a0a';
-  ctx.fillRect(0, 0, 860, 860);
+  /* --- Initial dark placeholder --- */
+  canvas.width  = 800;
+  canvas.height = 800;
+  ctx.fillStyle = '#0f0f0f';
+  ctx.fillRect(0, 0, 800, 800);
 
-  /* --- Load all four images --- */
+  /* --- Load both illustration PNGs --- */
   function loadImages() {
-    const SRC = {
-      offColor: 'images/light-off-color.jpg',
-      onColor:  'images/light-on-color.jpg',
-      offBW:    'images/light-off-bw.jpg',
-      onBW:     'images/light-on-bw.jpg',
-    };
+    let doneCount = 0;
+    const tmp    = document.createElement('canvas');
+    const tmpCtx = tmp.getContext('2d', { willReadFrequently: true });
 
-    const loadOne = (key, url) => new Promise(resolve => {
-      const img = new Image();
-      img.onload  = () => resolve({ key, img });
-      img.onerror = () => resolve({ key, img: null });
-      img.src = url;
-    });
-
-    Promise.all(
-      Object.entries(SRC).map(([k, v]) => loadOne(k, v))
-    ).then(results => {
-      /* Determine canvas pixel dimensions from the primary color image */
-      const primary = results.find(r => r.key === 'offColor' && r.img)
-                   || results.find(r => r.key === 'onColor'  && r.img);
-      if (!primary) return; // images not found — leave dark placeholder
-
-      const nw    = primary.img.naturalWidth;
-      const nh    = primary.img.naturalHeight;
-      const scale = Math.min(1, MAX_DIM / Math.max(nw, nh));
-      CW = Math.round(nw * scale);
-      CH = Math.round(nh * scale);
-
-      canvas.width  = CW;
-      canvas.height = CH;
-      outImageData  = ctx.createImageData(CW, CH);
-
-      /* Draw each image into a temp canvas at CW×CH to extract ImageData */
-      const tmp    = document.createElement('canvas');
-      tmp.width    = CW;
-      tmp.height   = CH;
-      const tmpCtx = tmp.getContext('2d', { willReadFrequently: true });
-
-      results.forEach(({ key, img }) => {
-        if (!img) { pixelData[key] = null; return; }
+    function onLoaded(key, img) {
+      if (img) {
+        /* Set canvas dimensions from first image that arrives */
+        if (CW === 0) {
+          const scale = Math.min(1, MAX_DIM / Math.max(img.naturalWidth, img.naturalHeight));
+          CW = Math.round(img.naturalWidth  * scale);
+          CH = Math.round(img.naturalHeight * scale);
+          canvas.width  = CW;
+          canvas.height = CH;
+          outImageData  = ctx.createImageData(CW, CH);
+          tmp.width  = CW;
+          tmp.height = CH;
+        }
         tmpCtx.clearRect(0, 0, CW, CH);
         tmpCtx.drawImage(img, 0, 0, CW, CH);
-        pixelData[key] = tmpCtx.getImageData(0, 0, CW, CH);
-      });
+        if (key === 'off') pixelsOff = tmpCtx.getImageData(0, 0, CW, CH);
+        else               pixelsOn  = tmpCtx.getImageData(0, 0, CW, CH);
+      }
+      doneCount++;
+      if (doneCount === 2) {
+        buildCircleMask();
+        vizState.loaded = true;
+        render();
+      }
+    }
 
-      vizState.loaded = true;
-      render();
+    ['off', 'on'].forEach(key => {
+      const img = new Image();
+      img.onload  = () => onLoaded(key, img);
+      img.onerror = () => onLoaded(key, null);
+      img.src = key === 'off' ? 'visualize-no-light.png' : 'visualize-with-light.png';
     });
   }
 
-  /* --- Render: apply colour tints using BW mask as luminosity guide --- */
-  let renderPending = false;
+  /* --- Build inside/outside mask via flood fill seeded from the wall region ---
+     Always uses pixelsOff (no-light image) — it has a clean white wall with no
+     shadow lines. The with-light image has radiating shadow lines extending into
+     the wall area which would act as false barriers and corrupt the mask.
+     Seeds the BFS from the true image perimeter (INSET=0) since the images have
+     no solid black frame. The circle border acts as a closed barrier; every
+     reachable pixel is "outside" (wall). White pixels not reachable are inside. */
+  function buildCircleMask() {
+    const src = pixelsOff;
+    if (!src) return;
+    const d = src.data;
 
+    insideMask = new Uint8Array(CW * CH);
+
+    /* Threshold: pixels with all channels below this are treated as barriers.
+       100 catches the solid circle border AND its anti-aliased edge pixels (~80). */
+    const BLACK_THRESH = 100;
+
+    /* No inset needed — images have no solid black outer frame. */
+    const INSET = 0;
+
+    const outside = new Uint8Array(CW * CH);
+    const queue   = new Int32Array(CW * CH);
+    let qHead = 0, qTail = 0;
+
+    function tryEnqueue(x, y) {
+      if (x < 0 || x >= CW || y < 0 || y >= CH) return;
+      const idx = y * CW + x;
+      if (outside[idx]) return;
+      const pi = idx * 4;
+      /* Barrier: opaque pixel that is dark on all channels */
+      if (d[pi] < BLACK_THRESH && d[pi + 1] < BLACK_THRESH && d[pi + 2] < BLACK_THRESH) return;
+      outside[idx] = 1;
+      queue[qTail++] = idx;
+    }
+
+    /* Seed from the true image perimeter — wall pixels start here. */
+    for (let x = INSET; x < CW - INSET; x++) {
+      tryEnqueue(x, INSET);
+      tryEnqueue(x, CH - 1 - INSET);
+    }
+    for (let y = INSET + 1; y < CH - INSET - 1; y++) {
+      tryEnqueue(INSET, y);
+      tryEnqueue(CW - 1 - INSET, y);
+    }
+
+    while (qHead < qTail) {
+      const idx = queue[qHead++];
+      const x   = idx % CW;
+      const y   = (idx / CW) | 0;
+      tryEnqueue(x - 1, y);
+      tryEnqueue(x + 1, y);
+      tryEnqueue(x,     y - 1);
+      tryEnqueue(x,     y + 1);
+    }
+
+    /* insideMask = 1 for white pixels that were NOT reachable from the wall */
+    const T = WHITE_THRESHOLD;
+    for (let i = 0; i < CW * CH; i++) {
+      const pi = i * 4;
+      insideMask[i] = (d[pi] >= T && d[pi + 1] >= T && d[pi + 2] >= T && !outside[i]) ? 1 : 0;
+    }
+  }
+
+  /* --- Render: pixel-level multiply tint on pure-white regions only --- */
   function scheduleRender() {
     if (renderPending) return;
     renderPending = true;
@@ -992,57 +1021,39 @@ document.addEventListener('keydown', (e) => {
   function render() {
     if (!vizState.loaded) return;
 
-    const colorKey = vizState.lightOn ? 'onColor' : 'offColor';
-    const bwKey    = vizState.lightOn ? 'onBW'    : 'offBW';
-    const colorPD  = pixelData[colorKey];
-    const bwPD     = pixelData[bwKey];
+    const pixels = vizState.lightOn ? pixelsOn : pixelsOff;
+    if (!pixels) return;
 
-    if (!colorPD) return;
-
-    const src = colorPD.data;
-    const bw  = bwPD ? bwPD.data : null;
+    const src = pixels.data;
     const out = outImageData.data;
-
-    /* Extract tint channel values once (avoids repeated object lookups) */
     const wR = vizState.wallColor.r,    wG = vizState.wallColor.g,    wB = vizState.wallColor.b;
     const sR = vizState.surfaceColor.r, sG = vizState.surfaceColor.g, sB = vizState.surfaceColor.b;
+    const n   = src.length;
+    const T   = WHITE_THRESHOLD;
 
-    const n = src.length;
+    for (let i = 0; i < n; i += 4) {
+      const r = src[i], g = src[i + 1], b = src[i + 2];
 
-    if (bw) {
-      for (let i = 0; i < n; i += 4) {
-        let r = src[i];
-        let g = src[i + 1];
-        let b = src[i + 2];
-
-        /* BW luminance — greyscale images have equal R/G/B channels */
-        const lum   = bw[i];
-        const wallW = wallLUT[lum];
-        const surfW = surfLUT[lum];
-
-        /* Multiply-blend tint lerped by region weight:
-           result = original + weight × (original × tintFactor − original)
-           Multiply only darkens, so output is always within [0, original]. */
-        if (wallW > 0.002) {
-          r = r + wallW * ((r * wR / 255) - r);
-          g = g + wallW * ((g * wG / 255) - g);
-          b = b + wallW * ((b * wB / 255) - b);
+      if (r >= T && g >= T && b >= T) {
+        /* Pure white pixel — apply colour via multiply blend */
+        if (insideMask && insideMask[i >> 2]) {
+          /* Inside circle → surface colour */
+          out[i]     = (r * sR / 255) | 0;
+          out[i + 1] = (g * sG / 255) | 0;
+          out[i + 2] = (b * sB / 255) | 0;
+        } else {
+          /* Outside circle → wall colour */
+          out[i]     = (r * wR / 255) | 0;
+          out[i + 1] = (g * wG / 255) | 0;
+          out[i + 2] = (b * wB / 255) | 0;
         }
-        if (surfW > 0.002) {
-          r = r + surfW * ((r * sR / 255) - r);
-          g = g + surfW * ((g * sG / 255) - g);
-          b = b + surfW * ((b * sB / 255) - b);
-        }
-
-        /* Fast round (multiply only reduces, so values stay 0–255) */
-        out[i]     = (r + 0.5) | 0;
-        out[i + 1] = (g + 0.5) | 0;
-        out[i + 2] = (b + 0.5) | 0;
-        out[i + 3] = src[i + 3];
+      } else {
+        /* Non-white pixel (black border, grey shadows, nails) — unchanged */
+        out[i]     = r;
+        out[i + 1] = g;
+        out[i + 2] = b;
       }
-    } else {
-      /* No BW mask available — copy color image unchanged */
-      for (let i = 0; i < n; i++) out[i] = src[i];
+      out[i + 3] = src[i + 3];
     }
 
     ctx.putImageData(outImageData, 0, 0);
@@ -1054,57 +1065,75 @@ document.addEventListener('keydown', (e) => {
     const surfPicker  = document.getElementById('surfaceColorPicker');
     const wallHexEl   = document.getElementById('wallColorHex');
     const surfHexEl   = document.getElementById('surfaceColorHex');
-    const lightToggle = document.getElementById('lightToggle');
+    const toggleBtn   = document.getElementById('lightToggleBtn');
+    const toggleLabel = document.getElementById('lightToggleLabel');
 
     if (wallPicker) {
       wallPicker.addEventListener('input', e => {
-        vizState.wallColor = hexToRgb(e.target.value);
-        if (wallHexEl) wallHexEl.textContent = e.target.value;
-        updateActivePreset(e.target.value);
+        const hex = e.target.value;
+        vizState.wallColor = hexToRgb(hex);
+        if (wallHexEl) wallHexEl.textContent = hex.toUpperCase();
+        updateActiveSwatches('wall', hex);
         scheduleRender();
       });
     }
 
     if (surfPicker) {
       surfPicker.addEventListener('input', e => {
-        vizState.surfaceColor = hexToRgb(e.target.value);
-        if (surfHexEl) surfHexEl.textContent = e.target.value;
+        const hex = e.target.value;
+        vizState.surfaceColor = hexToRgb(hex);
+        if (surfHexEl) surfHexEl.textContent = hex.toUpperCase();
+        updateActiveSwatches('surface', hex);
         scheduleRender();
       });
     }
 
-    /* Light toggle — cross-fade between states */
-    let toggleTimer = null;
-    if (lightToggle) {
-      lightToggle.addEventListener('change', e => {
-        vizState.lightOn = e.target.checked;
+    /* Light toggle button — fade out, swap illustration, fade in */
+    let fadeTimer = null;
+    if (toggleBtn) {
+      toggleBtn.addEventListener('click', () => {
+        vizState.lightOn = !vizState.lightOn;
+        toggleBtn.setAttribute('aria-pressed', String(vizState.lightOn));
+        toggleBtn.classList.toggle('light-on', vizState.lightOn);
+        if (toggleLabel) toggleLabel.textContent = vizState.lightOn ? 'Light On' : 'Light Off';
+
         canvas.style.opacity = '0';
-        clearTimeout(toggleTimer);
-        toggleTimer = setTimeout(() => {
+        clearTimeout(fadeTimer);
+        fadeTimer = setTimeout(() => {
           render();
           canvas.style.opacity = '1';
-        }, 280);
+        }, 220);
       });
     }
 
-    /* Preset wall colour swatches */
+    /* Preset swatches — wall and surface handled by data-target */
     document.querySelectorAll('.preset-swatch').forEach(sw => {
       sw.addEventListener('click', () => {
-        const hex = sw.dataset.color;
-        if (wallPicker) wallPicker.value = hex;
-        vizState.wallColor = hexToRgb(hex);
-        if (wallHexEl) wallHexEl.textContent = hex;
-        updateActivePreset(hex);
+        const target = sw.dataset.target;
+        const hex    = sw.dataset.color;
+        if (target === 'wall') {
+          vizState.wallColor = hexToRgb(hex);
+          if (wallPicker) wallPicker.value = hex;
+          if (wallHexEl)  wallHexEl.textContent = hex.toUpperCase();
+          updateActiveSwatches('wall', hex);
+        } else if (target === 'surface') {
+          vizState.surfaceColor = hexToRgb(hex);
+          if (surfPicker) surfPicker.value = hex;
+          if (surfHexEl)  surfHexEl.textContent = hex.toUpperCase();
+          updateActiveSwatches('surface', hex);
+        }
         scheduleRender();
       });
     });
 
-    updateActivePreset('#f5f0e8'); // warm white is default active
+    /* Mark default active swatches */
+    updateActiveSwatches('wall',    '#f5f0e8');
+    updateActiveSwatches('surface', '#f5f0e8');
   }
 
-  function updateActivePreset(hex) {
+  function updateActiveSwatches(target, hex) {
     const norm = hex.toLowerCase();
-    document.querySelectorAll('.preset-swatch').forEach(sw => {
+    document.querySelectorAll(`.preset-swatch[data-target="${target}"]`).forEach(sw => {
       sw.classList.toggle('active', sw.dataset.color.toLowerCase() === norm);
     });
   }

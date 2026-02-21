@@ -74,59 +74,68 @@
         <p class="visualize-sub"><em>Each work is made to order. Explore how light and surface colour respond to your environment.</em></p>
       </div>
 
-      <div class="visualize-main">
+      <!-- Illustration stage -->
+      <div class="visualize-stage">
+        <canvas id="visualizeCanvas" aria-label="Artwork colour visualization"></canvas>
+      </div>
 
-        <!-- Canvas display + toggle -->
-        <div class="visualize-canvas-wrap">
-          <canvas id="visualizeCanvas" aria-label="Artwork color visualization"></canvas>
+      <!-- Controls -->
+      <div class="visualize-controls">
 
-          <div class="light-toggle-wrap">
-            <span class="toggle-label">Light Off</span>
-            <label class="toggle-switch" aria-label="Toggle artwork light">
-              <input type="checkbox" id="lightToggle" role="switch">
-              <span class="toggle-track"><span class="toggle-thumb"></span></span>
-            </label>
-            <span class="toggle-label">Light On</span>
-          </div>
-        </div>
+        <button class="light-toggle-btn" id="lightToggleBtn" aria-pressed="false">
+          <svg class="lt-icon" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <circle cx="10" cy="10" r="3.5" stroke="currentColor" stroke-width="1.3"/>
+            <line x1="10" y1="1" x2="10" y2="3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+            <line x1="10" y1="16.5" x2="10" y2="19" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+            <line x1="1" y1="10" x2="3.5" y2="10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+            <line x1="16.5" y1="10" x2="19" y2="10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+            <line x1="3.05" y1="3.05" x2="4.8" y2="4.8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+            <line x1="15.2" y1="15.2" x2="16.95" y2="16.95" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+            <line x1="16.95" y1="3.05" x2="15.2" y2="4.8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+            <line x1="4.8" y1="15.2" x2="3.05" y2="16.95" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+          </svg>
+          <span id="lightToggleLabel">Light Off</span>
+        </button>
 
-        <!-- Colour controls -->
-        <div class="visualize-controls">
+        <div class="color-pickers">
 
-          <div class="color-pickers">
-            <div class="picker-group">
-              <label class="picker-label" for="wallColorPicker">Wall Colour</label>
-              <div class="picker-row">
-                <input type="color" id="wallColorPicker" value="#f5f0e8">
-                <span class="picker-hex" id="wallColorHex">#f5f0e8</span>
-              </div>
+          <div class="picker-group">
+            <label class="picker-label" for="wallColorPicker">Wall Colour</label>
+            <div class="picker-row">
+              <input type="color" id="wallColorPicker" value="#f5f0e8">
+              <span class="picker-hex" id="wallColorHex">#F5F0E8</span>
             </div>
-            <div class="picker-group">
-              <label class="picker-label" for="surfaceColorPicker">Surface Colour</label>
-              <div class="picker-row">
-                <input type="color" id="surfaceColorPicker" value="#e8d4a8">
-                <span class="picker-hex" id="surfaceColorHex">#e8d4a8</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="presets-group">
-            <p class="presets-label">Wall Presets</p>
-            <div class="presets-row">
-              <button class="preset-swatch active" data-color="#f5f0e8" title="Warm White" style="background:#f5f0e8;"></button>
-              <button class="preset-swatch" data-color="#c8cdd4" title="Cool Grey" style="background:#c8cdd4;"></button>
-              <button class="preset-swatch" data-color="#2e2e2e" title="Deep Charcoal" style="background:#2e2e2e;"></button>
-              <button class="preset-swatch" data-color="#8fa98a" title="Sage Green" style="background:#8fa98a;"></button>
-              <button class="preset-swatch" data-color="#c4896a" title="Dusty Terracotta" style="background:#c4896a;"></button>
-              <button class="preset-swatch" data-color="#1e3050" title="Navy" style="background:#1e3050;"></button>
+            <div class="swatches-row">
+              <button class="preset-swatch active" data-target="wall" data-color="#f5f0e8" title="Warm White" style="background:#f5f0e8"></button>
+              <button class="preset-swatch" data-target="wall" data-color="#c8cdd4" title="Cool Grey" style="background:#c8cdd4"></button>
+              <button class="preset-swatch" data-target="wall" data-color="#2c2c2c" title="Deep Charcoal" style="background:#2c2c2c"></button>
+              <button class="preset-swatch" data-target="wall" data-color="#8a9e85" title="Sage Green" style="background:#8a9e85"></button>
+              <button class="preset-swatch" data-target="wall" data-color="#c4785a" title="Dusty Terracotta" style="background:#c4785a"></button>
+              <button class="preset-swatch" data-target="wall" data-color="#1c2b4a" title="Navy" style="background:#1c2b4a"></button>
             </div>
           </div>
 
-          <p class="visualize-note"><a href="#contact">Enquire about a custom commission →</a></p>
+          <div class="picker-group">
+            <label class="picker-label" for="surfaceColorPicker">Surface Colour</label>
+            <div class="picker-row">
+              <input type="color" id="surfaceColorPicker" value="#f5f0e8">
+              <span class="picker-hex" id="surfaceColorHex">#F5F0E8</span>
+            </div>
+            <div class="swatches-row">
+              <button class="preset-swatch active" data-target="surface" data-color="#f5f0e8" title="Warm White" style="background:#f5f0e8"></button>
+              <button class="preset-swatch" data-target="surface" data-color="#e8dcc8" title="Cream" style="background:#e8dcc8"></button>
+              <button class="preset-swatch" data-target="surface" data-color="#d4b896" title="Pale Gold" style="background:#d4b896"></button>
+              <button class="preset-swatch" data-target="surface" data-color="#b8c4d0" title="Soft Blue" style="background:#b8c4d0"></button>
+              <button class="preset-swatch" data-target="surface" data-color="#d4a8a0" title="Blush" style="background:#d4a8a0"></button>
+              <button class="preset-swatch" data-target="surface" data-color="#1a1a1a" title="Black" style="background:#1a1a1a"></button>
+            </div>
+          </div>
 
-        </div><!-- end visualize-controls -->
+        </div><!-- end color-pickers -->
 
-      </div><!-- end visualize-main -->
+        <p class="visualize-note"><a href="#contact">Enquire about a custom commission →</a></p>
+
+      </div><!-- end visualize-controls -->
 
     </div><!-- end visualize-inner -->
   </section>
