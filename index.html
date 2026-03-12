@@ -48,6 +48,260 @@
     </div>
   </section>
 
+  <!-- Signature Animation -->
+  <section id="signature">
+    <div class="sig-wrap">
+      <svg id="sigSvg" viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"></svg>
+      <a href="#gallery" class="sig-cta" id="sigCta">View Works</a>
+    </div>
+  </section>
+
+  <style>
+    #signature {
+      width: 100%;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 80px 24px 100px;
+    }
+
+    .sig-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 64px;
+      width: 100%;
+      max-width: 560px;
+    }
+
+    #sigSvg {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      display: block;
+    }
+
+    .sig-cta {
+      display: inline-block;
+      font-family: var(--sans, 'Inter', system-ui, sans-serif);
+      font-size: 0.7rem;
+      font-weight: 400;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: #e8e3da;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 15px 40px;
+      opacity: 0;
+      pointer-events: none;
+      cursor: none;
+      transition: opacity 500ms ease, border-color 350ms cubic-bezier(0.25,0.46,0.45,0.94), color 350ms cubic-bezier(0.25,0.46,0.45,0.94), box-shadow 350ms cubic-bezier(0.25,0.46,0.45,0.94);
+    }
+
+    .sig-cta.sig-visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .sig-cta:hover {
+      border-color: #c9a96e;
+      color: #c9a96e;
+      box-shadow: 0 0 24px rgba(201, 169, 110, 0.25);
+    }
+
+    @keyframes sigBreath {
+      0%, 100% { opacity: 0.6; }
+      50%       { opacity: 1.0; }
+    }
+  </style>
+
+  <script>
+  (function () {
+    'use strict';
+
+    const NS  = 'http://www.w3.org/2000/svg';
+    const svg = document.getElementById('sigSvg');
+    const cta = document.getElementById('sigCta');
+
+    const CX = 300, CY = 300;
+    const DISC_R = 265;
+
+    /* ── element factory ──────────────────────────────────── */
+    function mkEl(tag, attrs) {
+      const e = document.createElementNS(NS, tag);
+      for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, String(v));
+      return e;
+    }
+
+    function mkNail(angleDeg, ringR, spikeLen, headR) {
+      const a  = (angleDeg * Math.PI) / 180;
+      const x1 = CX + (ringR - spikeLen) * Math.cos(a);
+      const y1 = CY + (ringR - spikeLen) * Math.sin(a);
+      const x2 = CX + ringR * Math.cos(a);
+      const y2 = CY + ringR * Math.sin(a);
+      const g  = mkEl('g', { opacity: 0 });
+      g.appendChild(mkEl('line',   { x1, y1, x2, y2, stroke: 'white', 'stroke-width': 1 }));
+      g.appendChild(mkEl('circle', { cx: x2, cy: y2, r: headR, fill: 'white' }));
+      return g;
+    }
+
+    /* ── disc edge ────────────────────────────────────────── */
+    const circ = 2 * Math.PI * DISC_R;
+    const disc = mkEl('circle', {
+      cx: CX, cy: CY, r: DISC_R,
+      fill: 'none', stroke: 'white', 'stroke-width': 1.5, opacity: 0
+    });
+    disc.style.strokeDasharray  = circ;
+    disc.style.strokeDashoffset = circ;
+    svg.appendChild(disc);
+
+    /* ── nail rings ───────────────────────────────────────── */
+    function makeRing(count, ringR, spikeLen, headR) {
+      const nails = [];
+      const g = mkEl('g', {});
+      for (let i = 0; i < count; i++) {
+        const n = mkNail((i / count) * 360, ringR, spikeLen, headR);
+        g.appendChild(n);
+        nails.push(n);
+      }
+      svg.appendChild(g);
+      return nails;
+    }
+
+    const outerNails = makeRing(80, DISC_R,                     12, 2.0);
+    const midNails   = makeRing(60, Math.round(DISC_R * 0.67),  9,  2.0);
+    const innerNails = makeRing(40, Math.round(DISC_R * 0.33),  6,  1.5);
+
+    /* ── center aperture ──────────────────────────────────── */
+    const apertureG = mkEl('g', { opacity: 0 });
+    apertureG.appendChild(mkEl('circle', { cx: CX, cy: CY, r: 18, fill: 'none', stroke: 'white', 'stroke-width': 1.5 }));
+    apertureG.appendChild(mkEl('circle', { cx: CX, cy: CY, r: 14, fill: 'black' }));
+    svg.appendChild(apertureG);
+
+    /* ── shadow lines ─────────────────────────────────────── */
+    // 28 lines — intentional angular clustering, uneven spacing
+    const shadowData = [
+      //  angle   opacity  endRadius
+      [   4, 0.35, 292], [   7, 0.48, 285], [  11, 0.30, 296],
+      [  29, 0.42, 290], [  33, 0.27, 295],
+      [  52, 0.50, 288],
+      [  66, 0.37, 293], [  69, 0.52, 280],
+      [  91, 0.44, 298],
+      [ 109, 0.31, 291], [ 113, 0.46, 287],
+      [ 138, 0.40, 294],
+      [ 154, 0.33, 289], [ 157, 0.55, 283], [ 161, 0.38, 297],
+      [ 182, 0.45, 290],
+      [ 199, 0.28, 296], [ 204, 0.41, 285],
+      [ 227, 0.48, 292],
+      [ 244, 0.35, 288], [ 248, 0.43, 295],
+      [ 271, 0.51, 290],
+      [ 289, 0.30, 297], [ 293, 0.44, 284], [ 297, 0.38, 291],
+      [ 318, 0.47, 293],
+      [ 335, 0.32, 289], [ 339, 0.50, 296],
+    ]; // 28 entries
+
+    const shadowGroup = mkEl('g', { id: 'sigShadows', opacity: 0 });
+    const shadowLines = [];
+
+    shadowData.forEach(([angleDeg, opacity, endR]) => {
+      const a      = (angleDeg * Math.PI) / 180;
+      const startR = 22;
+      const len    = endR - startR;
+      const x1 = CX + startR * Math.cos(a);
+      const y1 = CY + startR * Math.sin(a);
+      const x2 = CX + endR   * Math.cos(a);
+      const y2 = CY + endR   * Math.sin(a);
+      const line = mkEl('line', {
+        x1, y1, x2, y2,
+        stroke: 'white', 'stroke-width': 0.75, opacity,
+      });
+      line.style.strokeDasharray  = len;
+      line.style.strokeDashoffset = len;
+      shadowGroup.appendChild(line);
+      shadowLines.push(line);
+    });
+
+    svg.appendChild(shadowGroup);
+
+    /* ── build sequence ───────────────────────────────────── */
+    let fired = false;
+
+    function buildSequence() {
+      if (fired) return;
+      fired = true;
+
+      let t = 0;
+
+      // 1 — Disc edge draws clockwise (0.6 s)
+      disc.style.opacity    = 1;
+      disc.style.transition = 'stroke-dashoffset 600ms cubic-bezier(0.25,0.46,0.45,0.94)';
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        disc.style.strokeDashoffset = 0;
+      }));
+      t += 700;
+
+      // 2 — Outer nails stagger in (0.8 s total)
+      setTimeout(() => {
+        outerNails.forEach((n, i) => setTimeout(() => {
+          n.style.transition = 'opacity 120ms ease';
+          n.style.opacity    = 1;
+        }, (i / outerNails.length) * 800));
+      }, t);
+      t += 950;
+
+      // 3 — Middle nails stagger in (0.7 s total)
+      setTimeout(() => {
+        midNails.forEach((n, i) => setTimeout(() => {
+          n.style.transition = 'opacity 120ms ease';
+          n.style.opacity    = 1;
+        }, (i / midNails.length) * 700));
+      }, t);
+      t += 850;
+
+      // 4 — Inner nails stagger in (0.6 s total)
+      setTimeout(() => {
+        innerNails.forEach((n, i) => setTimeout(() => {
+          n.style.transition = 'opacity 100ms ease';
+          n.style.opacity    = 1;
+        }, (i / innerNails.length) * 600));
+      }, t);
+      t += 750;
+
+      // 5 — Center aperture fades in (0.3 s)
+      setTimeout(() => {
+        apertureG.style.transition = 'opacity 300ms ease';
+        apertureG.style.opacity    = 1;
+      }, t);
+      t += 450;
+
+      // 6 — Shadow lines grow from center (1.2 s)
+      setTimeout(() => {
+        shadowGroup.style.opacity = 1;
+        shadowLines.forEach(line => {
+          line.style.transition       = 'stroke-dashoffset 1200ms cubic-bezier(0.25,0.46,0.45,0.94)';
+          line.style.strokeDashoffset = 0;
+        });
+      }, t);
+      t += 1400;
+
+      // 7 — Breathing begins, CTA fades in
+      setTimeout(() => {
+        // Shadow lines breathe — start at animation midpoint (opacity 1.0) using negative delay
+        shadowGroup.style.animation      = 'sigBreath 3.5s ease-in-out infinite';
+        shadowGroup.style.animationDelay = '-1.75s';
+        // CTA
+        cta.classList.add('sig-visible');
+      }, t);
+    }
+
+    /* ── intersection observer ────────────────────────────── */
+    const observer = new IntersectionObserver(
+      entries => { if (entries[0].isIntersecting) { buildSequence(); observer.disconnect(); } },
+      { threshold: 0.25 }
+    );
+    observer.observe(svg);
+  }());
+  </script>
+
   <!-- Gallery -->
   <section id="gallery">
     <div class="container">
