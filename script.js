@@ -101,6 +101,16 @@ const ARTWORKS = [
     available: true,
     image: 'images/bilateral-radiance.jpg',
   },
+  {
+    id: 9,
+    title: 'Red Corona',
+    year: 2025,
+    medium: 'Mixed media',
+    dimensions: '61cm diameter',
+    w: 61, h: 61, isCircle: true,
+    available: false,
+    image: 'images/Red-Corona.jpg',
+  },
 ];
 
 /* ======================== STATE ======================== */
