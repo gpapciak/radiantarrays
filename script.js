@@ -104,12 +104,22 @@ const ARTWORKS = [
   {
     id: 9,
     title: 'Red Corona',
-    year: 2025,
+    year: 2021,
     medium: 'Mixed media',
     dimensions: '61cm diameter',
     w: 61, h: 61, isCircle: true,
     available: false,
     image: 'images/Red-Corona.jpg',
+  },
+  {
+    id: 10,
+    title: 'Cavea Oculi',
+    year: 2024,
+    medium: 'Mixed media',
+    dimensions: '61cm diameter',
+    w: 61, h: 61, isCircle: true,
+    available: false,
+    image: 'images/cavea-oculi-2024-61cm.jpg',
   },
 ];
 
