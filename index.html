@@ -253,17 +253,17 @@
       }));
       t += 700;
 
-      // 2 & 3 — Outer rings A then B (1000 ms each, 25% slower)
-      staggerRing(outerNailsA, 1000, t); t += 1150;
-      staggerRing(outerNailsB, 1000, t); t += 1150;
+      // 2 & 3 — Outer rings A then B (800 ms each)
+      staggerRing(outerNailsA, 800, t); t += 950;
+      staggerRing(outerNailsB, 800, t); t += 950;
 
-      // 4 & 5 — Mid rings A then B (875 ms each)
-      staggerRing(midNailsA, 875, t); t += 1025;
-      staggerRing(midNailsB, 875, t); t += 1025;
+      // 4 & 5 — Mid rings A then B (700 ms each)
+      staggerRing(midNailsA, 700, t); t += 850;
+      staggerRing(midNailsB, 700, t); t += 850;
 
-      // 6 & 7 — Inner rings A then B (750 ms each)
-      staggerRing(innerNailsA, 750, t); t += 900;
-      staggerRing(innerNailsB, 750, t); t += 900;
+      // 6 & 7 — Inner rings A then B (600 ms each)
+      staggerRing(innerNailsA, 600, t); t += 750;
+      staggerRing(innerNailsB, 600, t); t += 750;
 
       // 8 — Center aperture fades in (0.3 s)
       setTimeout(() => {
