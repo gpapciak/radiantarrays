@@ -143,6 +143,18 @@ const ARTWORKS = [
     type: 'illuminated',
     image: 'images/cavea-oculi-2024-61cm.jpg',
   },
+  {
+    id: 11,
+    title: 'Violet Drift',
+    year: 2023,
+    medium: 'Mixed media',
+    dimensions: '40cm × 80cm',
+    w: 40, h: 80, isCircle: false,
+    available: 'enquire',
+    size: 'large',
+    type: 'non-illuminated',
+    image: 'images/violet-drift-2023-40cmX80cm.JPG',
+  },
 ];
 
 /* ======================== STATE ======================== */
