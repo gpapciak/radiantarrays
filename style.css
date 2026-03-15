@@ -1262,7 +1262,7 @@ footer {
 /* Caveat line */
 .visualize-caveat {
   font-family: var(--serif);
-  font-size: clamp(1.15rem, 2vw, 1.6rem);
+  font-size: clamp(1.38rem, 2.4vw, 1.92rem);
   font-weight: 300;
   font-style: italic;
   color: rgba(232, 227, 218, 0.55);
