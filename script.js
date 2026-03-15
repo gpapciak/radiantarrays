@@ -20,7 +20,7 @@ const ARTWORKS = [
     w: 95, h: 78, isCircle: false,
     available: 'enquire',
     size: 'large',
-    type: 'non-illuminated',
+    type: 'illuminated',
     image: 'images/singularity-field.jpg',
   },
   {
@@ -32,7 +32,7 @@ const ARTWORKS = [
     w: 46, h: 46, isCircle: true,
     available: 'enquire',
     size: 'small',
-    type: 'non-illuminated',
+    type: 'illuminated',
     image: 'images/chromatic-wheel.jpg',
   },
   {
@@ -44,7 +44,7 @@ const ARTWORKS = [
     w: 46, h: 46, isCircle: true,
     available: 'enquire',
     size: 'small',
-    type: 'non-illuminated',
+    type: 'illuminated',
     image: 'images/oxide-spirals.jpg',
   },
   {
@@ -56,7 +56,7 @@ const ARTWORKS = [
     w: 80, h: 80, isCircle: false,
     available: 'enquire',
     size: 'large',
-    type: 'non-illuminated',
+    type: 'illuminated',
     image: 'images/convergence-chamber.jpg',
   },
   {
@@ -68,7 +68,7 @@ const ARTWORKS = [
     w: 46, h: 46, isCircle: true,
     available: 'enquire',
     size: 'small',
-    type: 'non-illuminated',
+    type: 'illuminated',
     image: 'images/radiant-axis.jpg',
   },
   {
@@ -80,7 +80,7 @@ const ARTWORKS = [
     w: 120, h: 60, isCircle: false,
     available: 'enquire',
     size: 'large',
-    type: 'non-illuminated',
+    type: 'illuminated',
     image: 'images/radiant-dialogue.jpg',
   },
   {
@@ -92,7 +92,7 @@ const ARTWORKS = [
     w: 61, h: 61, isCircle: true,
     available: 'in-collection',
     size: 'medium',
-    type: 'non-illuminated',
+    type: 'illuminated',
     image: 'images/refraction-hexadecagon.jpg',
   },
   {
@@ -104,7 +104,7 @@ const ARTWORKS = [
     w: 60, h: 60, isCircle: false,
     available: 'enquire',
     size: 'medium',
-    type: 'non-illuminated',
+    type: 'illuminated',
     image: 'images/circular-radiants-2.jpg',
   },
   {
@@ -116,7 +116,7 @@ const ARTWORKS = [
     w: 61, h: 61, isCircle: true,
     available: 'enquire',
     size: 'medium',
-    type: 'non-illuminated',
+    type: 'illuminated',
     image: 'images/bilateral-radiance.jpg',
   },
   {
@@ -128,7 +128,7 @@ const ARTWORKS = [
     w: 61, h: 61, isCircle: true,
     available: 'in-collection',
     size: 'medium',
-    type: 'non-illuminated',
+    type: 'illuminated',
     image: 'images/Red-Corona.jpg',
   },
   {
@@ -140,7 +140,7 @@ const ARTWORKS = [
     w: 61, h: 61, isCircle: true,
     available: 'in-collection',
     size: 'medium',
-    type: 'non-illuminated',
+    type: 'illuminated',
     image: 'images/cavea-oculi-2024-61cm.jpg',
   },
 ];
