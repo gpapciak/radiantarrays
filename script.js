@@ -1155,19 +1155,19 @@ document.addEventListener('keydown', (e) => {
 
     /* Spatial reverb: 4 s convolver with exponential noise decay */
     const conv  = audioCtx.createConvolver();
-    const irLen = Math.floor(audioCtx.sampleRate * 4.0);
+    const irLen = Math.floor(audioCtx.sampleRate * 1.8);
     const ir    = audioCtx.createBuffer(2, irLen, audioCtx.sampleRate);
     for (let ch = 0; ch < 2; ch++) {
       const d = ir.getChannelData(ch);
       for (let i = 0; i < irLen; i++) {
-        d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / irLen, 2.2);
+        d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / irLen, 2.8);
       }
     }
     conv.buffer = ir;
 
-    /* Dry/wet into master — 55 % direct, 45 % reverbed */
-    const dryGain = audioCtx.createGain(); dryGain.gain.value = 0.55;
-    const wetGain = audioCtx.createGain(); wetGain.gain.value = 0.45;
+    /* Dry/wet into master — 70 % direct, 30 % reverbed */
+    const dryGain = audioCtx.createGain(); dryGain.gain.value = 0.70;
+    const wetGain = audioCtx.createGain(); wetGain.gain.value = 0.30;
     dryGain.connect(masterGain);
     wetGain.connect(masterGain);
     conv.connect(wetGain);
@@ -1178,19 +1178,19 @@ document.addEventListener('keydown', (e) => {
     preMaster.connect(dryGain);
     preMaster.connect(conv);
 
-    /* ── LAYER 1: low fundamental drone (~70 Hz) ──────────────────
-       Breathing LFO at 0.125 Hz (8-second rise/fall cycle).
+    /* ── LAYER 1: low fundamental drone (~110 Hz) ─────────────────
+       Breathing LFO at 0.10 Hz (10-second rise/fall cycle).
        gain1 base = 0.72, LFO depth ±0.28  →  range 0.44–1.00      */
     const osc1  = audioCtx.createOscillator();
     const gain1 = audioCtx.createGain();
     osc1.type            = 'sine';
-    osc1.frequency.value = 70;
+    osc1.frequency.value = 110;
     gain1.gain.value     = 0.72;
 
     const lfo1  = audioCtx.createOscillator();
     const lfoA1 = audioCtx.createGain();
     lfo1.type            = 'sine';
-    lfo1.frequency.value = 0.125; // 8-second breath
+    lfo1.frequency.value = 0.10; // 10-second breath
     lfoA1.gain.value     = 0.28;
     lfo1.connect(lfoA1);
     lfoA1.connect(gain1.gain);
@@ -1200,8 +1200,8 @@ document.addEventListener('keydown', (e) => {
     lfo1.start();
     osc1.start();
 
-    /* ── LAYER 2: mid harmonic (~280 Hz, 2 octaves up) ────────────
-       Two oscillators detuned ±9 cents — slow beating / shimmer.
+    /* ── LAYER 2: mid harmonic (~330 Hz, major third above 110 Hz) ─
+       Two oscillators detuned ±5 cents — slow beating / shimmer.
        Separate LFO at 0.09 Hz (~11 s) for polyrhythmic swell.      */
     const gain2 = audioCtx.createGain();
     gain2.gain.value = 0.48;
@@ -1209,8 +1209,8 @@ document.addEventListener('keydown', (e) => {
     const osc2a = audioCtx.createOscillator();
     const ogn2a = audioCtx.createGain();
     osc2a.type            = 'sine';
-    osc2a.frequency.value = 280;
-    osc2a.detune.value    = -9;
+    osc2a.frequency.value = 330;
+    osc2a.detune.value    = -5;
     ogn2a.gain.value      = 0.55;
     osc2a.connect(ogn2a);
     ogn2a.connect(gain2);
@@ -1218,8 +1218,8 @@ document.addEventListener('keydown', (e) => {
     const osc2b = audioCtx.createOscillator();
     const ogn2b = audioCtx.createGain();
     osc2b.type            = 'sine';
-    osc2b.frequency.value = 280;
-    osc2b.detune.value    = +9;
+    osc2b.frequency.value = 330;
+    osc2b.detune.value    = +5;
     ogn2b.gain.value      = 0.55;
     osc2b.connect(ogn2b);
     ogn2b.connect(gain2);
@@ -1238,13 +1238,13 @@ document.addEventListener('keydown', (e) => {
     osc2b.start();
 
     /* ── LAYER 3: crystalline overtones (sparse, unpredictable) ───
-       Brief sine tones at high harmonics of 70 Hz — like light
-       catching a nail head. Appear every 4–12 seconds at random.   */
+       Brief sine tones at high harmonics of 110 Hz — like light
+       catching a nail head. Appear every 3–8 seconds at random.    */
     const crystalBus = audioCtx.createGain();
     crystalBus.gain.value = 0.55;
     crystalBus.connect(preMaster);
 
-    const CRYSTAL_FREQS = [1120, 1260, 1400, 1540, 1680, 1960, 2240];
+    const CRYSTAL_FREQS = [1320, 1540, 1760, 1980, 2200, 2640, 3080];
 
     function spawnOvertone() {
       if (!audioCtx) return;
@@ -1252,7 +1252,7 @@ document.addEventListener('keydown', (e) => {
       const sustain = 0.15 + Math.random() * 0.55;   // 0.15–0.70 s
       const attack  = 0.04;
       const release = 0.55 + Math.random() * 0.45;   // 0.55–1.00 s
-      const peak    = 0.45 + Math.random() * 0.40;   // 0.45–0.85
+      const peak    = 0.50 + Math.random() * 0.35;   // 0.50–0.85
 
       const osc = audioCtx.createOscillator();
       const env = audioCtx.createGain();
@@ -1270,11 +1270,11 @@ document.addEventListener('keydown', (e) => {
       osc.start(t);
       osc.stop(t + attack + sustain + release + 0.15);
 
-      crystalTimer = setTimeout(spawnOvertone, 4000 + Math.random() * 8000);
+      crystalTimer = setTimeout(spawnOvertone, 3000 + Math.random() * 5000);
     }
 
     // First spark after a short natural pause
-    crystalTimer = setTimeout(spawnOvertone, 2000 + Math.random() * 3000);
+    crystalTimer = setTimeout(spawnOvertone, 1500 + Math.random() * 2000);
   }
 
   /* --- Fade helpers --- */
