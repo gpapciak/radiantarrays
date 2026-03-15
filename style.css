@@ -943,6 +943,24 @@ section { padding: 120px 0; }
   font-style: italic;
 }
 
+.led-photo-figure {
+  margin-top: 56px;
+  max-width: 420px;
+}
+
+.led-photo {
+  width: 100%;
+  display: block;
+}
+
+.led-photo-caption {
+  font-family: var(--mono, 'Inconsolata', monospace);
+  font-size: 0.78rem;
+  color: rgba(232, 227, 218, 0.45);
+  letter-spacing: 0.04em;
+  margin-top: 10px;
+}
+
 /* SVG architectural drawings — white paper style */
 .arch-drawing {
   background: #fff;
