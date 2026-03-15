@@ -304,10 +304,24 @@
     <div class="container">
       <div class="section-header">
         <h2 class="section-title">Works</h2>
-        <div class="filter-group" role="group" aria-label="Filter artworks">
-          <button class="filter-btn active" data-filter="all">All</button>
-          <button class="filter-btn" data-filter="available">Available</button>
-          <button class="filter-btn" data-filter="sold">Sold</button>
+        <div class="filter-controls" role="group" aria-label="Filter artworks">
+          <div class="filter-row">
+            <span class="filter-label">Size</span>
+            <div class="filter-group">
+              <button class="filter-btn active" data-size="all">All</button>
+              <button class="filter-btn" data-size="small">Small</button>
+              <button class="filter-btn" data-size="medium">Medium</button>
+              <button class="filter-btn" data-size="large">Large</button>
+            </div>
+          </div>
+          <div class="filter-row">
+            <span class="filter-label">Type</span>
+            <div class="filter-group">
+              <button class="filter-btn active" data-type="all">All</button>
+              <button class="filter-btn" data-type="illuminated">Illuminated</button>
+              <button class="filter-btn" data-type="non-illuminated">Non-Illuminated</button>
+            </div>
+          </div>
         </div>
       </div>
       <div class="gallery-grid" id="galleryGrid">

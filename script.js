@@ -18,7 +18,9 @@ const ARTWORKS = [
     medium: 'Mixed media',
     dimensions: '95cm × 78cm',
     w: 95, h: 78, isCircle: false,
-    available: true,
+    available: 'enquire',
+    size: 'large',
+    type: 'non-illuminated',
     image: 'images/singularity-field.jpg',
   },
   {
@@ -28,7 +30,9 @@ const ARTWORKS = [
     medium: 'Mixed media',
     dimensions: '46cm diameter',
     w: 46, h: 46, isCircle: true,
-    available: true,
+    available: 'enquire',
+    size: 'small',
+    type: 'non-illuminated',
     image: 'images/chromatic-wheel.jpg',
   },
   {
@@ -38,7 +42,9 @@ const ARTWORKS = [
     medium: 'Mixed media',
     dimensions: '46cm diameter',
     w: 46, h: 46, isCircle: true,
-    available: true,
+    available: 'enquire',
+    size: 'small',
+    type: 'non-illuminated',
     image: 'images/oxide-spirals.jpg',
   },
   {
@@ -48,7 +54,9 @@ const ARTWORKS = [
     medium: 'Mixed media',
     dimensions: '80cm × 80cm',
     w: 80, h: 80, isCircle: false,
-    available: true,
+    available: 'enquire',
+    size: 'large',
+    type: 'non-illuminated',
     image: 'images/convergence-chamber.jpg',
   },
   {
@@ -58,7 +66,9 @@ const ARTWORKS = [
     medium: 'Mixed media',
     dimensions: '46cm diameter',
     w: 46, h: 46, isCircle: true,
-    available: true,
+    available: 'enquire',
+    size: 'small',
+    type: 'non-illuminated',
     image: 'images/radiant-axis.jpg',
   },
   {
@@ -68,7 +78,9 @@ const ARTWORKS = [
     medium: 'Mixed media',
     dimensions: '120cm × 60cm',
     w: 120, h: 60, isCircle: false,
-    available: true,
+    available: 'enquire',
+    size: 'large',
+    type: 'non-illuminated',
     image: 'images/radiant-dialogue.jpg',
   },
   {
@@ -78,7 +90,9 @@ const ARTWORKS = [
     medium: 'Mixed media',
     dimensions: '61cm diameter',
     w: 61, h: 61, isCircle: true,
-    available: false,
+    available: 'in-collection',
+    size: 'medium',
+    type: 'non-illuminated',
     image: 'images/refraction-hexadecagon.jpg',
   },
   {
@@ -88,7 +102,9 @@ const ARTWORKS = [
     medium: 'Mixed media',
     dimensions: '60cm × 60cm',
     w: 60, h: 60, isCircle: false,
-    available: true,
+    available: 'enquire',
+    size: 'medium',
+    type: 'non-illuminated',
     image: 'images/circular-radiants-2.jpg',
   },
   {
@@ -98,7 +114,9 @@ const ARTWORKS = [
     medium: 'Mixed media',
     dimensions: '61cm diameter',
     w: 61, h: 61, isCircle: true,
-    available: true,
+    available: 'enquire',
+    size: 'medium',
+    type: 'non-illuminated',
     image: 'images/bilateral-radiance.jpg',
   },
   {
@@ -108,7 +126,9 @@ const ARTWORKS = [
     medium: 'Mixed media',
     dimensions: '61cm diameter',
     w: 61, h: 61, isCircle: true,
-    available: false,
+    available: 'in-collection',
+    size: 'medium',
+    type: 'non-illuminated',
     image: 'images/Red-Corona.jpg',
   },
   {
@@ -118,14 +138,17 @@ const ARTWORKS = [
     medium: 'Mixed media',
     dimensions: '61cm diameter',
     w: 61, h: 61, isCircle: true,
-    available: false,
+    available: 'in-collection',
+    size: 'medium',
+    type: 'non-illuminated',
     image: 'images/cavea-oculi-2024-61cm.jpg',
   },
 ];
 
 /* ======================== STATE ======================== */
 const state = {
-  filter: 'all',
+  sizeFilter: 'all',
+  typeFilter: 'all',
   filtered: [...ARTWORKS],   // artworks visible after filter
   lightboxIndex: 0,          // index into state.filtered
   lightboxOpen: false,
@@ -454,7 +477,9 @@ const state = {
       const card = document.createElement('article');
       card.className = 'artwork-card';
       card.dataset.id        = String(art.id);
-      card.dataset.available = String(art.available);
+      card.dataset.available = art.available;
+      card.dataset.size      = art.size;
+      card.dataset.type      = art.type;
       card.style.setProperty('--ar', ar);
       card.setAttribute('tabindex', '0');
       card.setAttribute('role', 'button');
@@ -474,20 +499,30 @@ const state = {
              </span>
            </div>`;
 
+      const statusHTML = art.available === 'enquire'
+        ? `<button class="card-enquire" data-id="${art.id}">Enquire</button>`
+        : `<span class="card-in-collection">In Collection</span>`;
+
       card.innerHTML = `
         <div class="card-image">${imgHTML}</div>
         <div class="card-info">
           <p class="card-title">${art.title}</p>
           <p class="card-year">${art.year} &nbsp;·&nbsp; ${art.dimensions}</p>
-          <span class="card-status ${art.available ? 'available' : 'sold'}">
-            ${art.available ? 'Available' : 'Sold'}
-          </span>
+          ${statusHTML}
         </div>`;
 
       card.addEventListener('click',   () => openLightbox(i));
       card.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openLightbox(i); }
       });
+
+      const enquireBtn = card.querySelector('.card-enquire');
+      if (enquireBtn) {
+        enquireBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          openInquiry(art);
+        });
+      }
 
       grid.appendChild(card);
     });
@@ -520,28 +555,51 @@ const state = {
     });
   }
 
-  /* Filter */
-  function applyFilter(filter) {
-    state.filter = filter;
+  /* Filter — combinable size + type */
+  function applyFilters() {
+    const sz = state.sizeFilter;
+    const ty = state.typeFilter;
     const cards = grid.querySelectorAll('.artwork-card');
     const filtered = [];
     cards.forEach(card => {
-      const avail = card.dataset.available === 'true';
-      const show  = filter === 'all'
-                 || (filter === 'available' && avail)
-                 || (filter === 'sold'      && !avail);
+      const matchSize = sz === 'all' || card.dataset.size === sz;
+      const matchType = ty === 'all' || card.dataset.type === ty;
+      const show = matchSize && matchType;
       card.classList.toggle('card-hidden', !show);
-      if (show) filtered.push(ARTWORKS[parseInt(card.dataset.id)]);
+      if (show) filtered.push(ARTWORKS.find(a => a.id === parseInt(card.dataset.id)));
     });
     state.filtered = filtered;
+
+    // Empty state
+    let empty = grid.querySelector('.gallery-empty');
+    if (filtered.length === 0) {
+      if (!empty) {
+        empty = document.createElement('p');
+        empty.className = 'gallery-empty';
+        empty.textContent = 'No works match these filters.';
+        grid.appendChild(empty);
+      }
+    } else {
+      if (empty) empty.remove();
+    }
   }
 
-  /* Filter button clicks */
-  document.querySelectorAll('.filter-btn').forEach(btn => {
+  /* Filter button clicks — each group manages its own active state */
+  document.querySelectorAll('[data-size]').forEach(btn => {
     btn.addEventListener('click', () => {
-      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('[data-size]').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      applyFilter(btn.dataset.filter);
+      state.sizeFilter = btn.dataset.size;
+      applyFilters();
+    });
+  });
+
+  document.querySelectorAll('[data-type]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-type]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.typeFilter = btn.dataset.type;
+      applyFilters();
     });
   });
 
@@ -725,14 +783,14 @@ function renderLightbox() {
     <dt>Medium</dt><dd>${art.medium}</dd>
     <dt>Dimensions</dt><dd>${art.dimensions}</dd>`;
 
-  lbStatus.className   = 'lb-status ' + (art.available ? 'available' : 'sold');
-  lbStatus.textContent = art.available ? 'Available' : 'Sold';
+  lbStatus.className   = 'lb-status ' + art.available;
+  lbStatus.textContent = art.available === 'enquire' ? 'Available' : 'In Collection';
 
   /* Size visualizer */
   sizeVizCon.innerHTML = buildSizeViz(art);
 
   /* Inquire button */
-  inquireBtn.disabled = !art.available;
+  inquireBtn.disabled = art.available !== 'enquire';
   inquireBtn.onclick  = () => openInquiry(art);
 
   resetPZ();

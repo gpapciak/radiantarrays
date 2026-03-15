@@ -303,10 +303,32 @@ section { padding: 120px 0; }
 }
 
 /* ======================== GALLERY FILTERS ======================== */
+.filter-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-end;
+}
+
+.filter-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.filter-label {
+  font-size: 0.60rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  opacity: 0.55;
+  min-width: 2.8rem;
+  text-align: right;
+}
+
 .filter-group {
   display: flex;
   gap: 6px;
-  margin-bottom: 2px;
 }
 
 .filter-btn {
@@ -421,25 +443,52 @@ section { padding: 120px 0; }
   color: var(--text-muted);
   margin-bottom: 12px;
 }
-.card-status {
+.card-enquire {
   display: inline-flex;
   align-items: center;
   gap: 7px;
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
   font-size: 0.62rem;
   letter-spacing: 0.16em;
   text-transform: uppercase;
+  padding: 6px 14px;
+  cursor: none;
+  transition: var(--t);
 }
-.card-status::before {
+.card-enquire::before {
   content: '';
   width: 5px;
   height: 5px;
   border-radius: 50%;
+  background: var(--green);
   flex-shrink: 0;
 }
-.card-status.available { color: var(--green); }
-.card-status.available::before { background: var(--green); }
-.card-status.sold { color: var(--text-muted); }
-.card-status.sold::before { background: var(--text-muted); }
+.card-enquire:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.card-in-collection {
+  display: inline-block;
+  font-size: 0.58rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(232, 227, 218, 0.28);
+}
+
+.gallery-empty {
+  column-span: all;
+  text-align: center;
+  font-family: var(--serif);
+  font-size: 1rem;
+  font-weight: 300;
+  font-style: italic;
+  color: rgba(232, 227, 218, 0.35);
+  padding: 80px 0;
+  width: 100%;
+}
 
 /* Radiant Dialogue — taller card in gallery */
 .artwork-card[data-id="4"] .card-image {
@@ -616,10 +665,10 @@ section { padding: 120px 0; }
   border-radius: 50%;
   flex-shrink: 0;
 }
-.lb-status.available { color: var(--green); }
-.lb-status.available::before { background: var(--green); }
-.lb-status.sold { color: var(--text-muted); }
-.lb-status.sold::before { background: var(--text-muted); }
+.lb-status.enquire { color: var(--green); }
+.lb-status.enquire::before { background: var(--green); }
+.lb-status.in-collection { color: var(--text-muted); }
+.lb-status.in-collection::before { background: var(--text-muted); }
 
 /* Size visualizer */
 .lb-size-viz {
@@ -1500,6 +1549,8 @@ footer {
 
 @media (max-width: 480px) {
   .hero-cta { padding: 13px 30px; }
+  .filter-controls { align-items: flex-start; }
+  .filter-row { flex-wrap: wrap; }
   .filter-group { flex-wrap: wrap; }
   .footer-inner { flex-direction: column; gap: 8px; text-align: center; }
 }
