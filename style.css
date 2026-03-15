@@ -1262,12 +1262,13 @@ footer {
 /* Caveat line */
 .visualize-caveat {
   font-family: var(--serif);
-  font-size: 1.2rem;
+  font-size: clamp(1.15rem, 2vw, 1.6rem);
   font-weight: 300;
   font-style: italic;
   color: rgba(232, 227, 218, 0.55);
   line-height: 1.6;
-  margin-bottom: 36px;
+  margin-top: 10px;
+  margin-bottom: 0;
 }
 
 /* Commission note */
