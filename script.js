@@ -875,24 +875,17 @@ lbEl.addEventListener('click', (e) => {
 const inquiryOverlay = document.getElementById('inquiryOverlay');
 const inquiryModal   = document.getElementById('inquiryModal');
 const inquiryClose   = document.getElementById('inquiryClose');
-const inquiryPiece   = document.getElementById('inquiryPiece');
-const inquiryForm    = document.getElementById('inquiryForm');
-let   currentArtwork = null;
+const inquiryTitle   = document.getElementById('inquiryTitle');
+const inquirySubject = document.getElementById('inquirySubject');
+const inquiryCopy    = document.getElementById('inquiryCopy');
 
 function openInquiry(art) {
-  currentArtwork = art;
-  inquiryPiece.textContent = art.title + ' (' + art.year + ')';
-  inquiryForm.reset();
-  // Remove any previous success message
-  const existing = inquiryForm.querySelector('.form-success');
-  if (existing) existing.remove();
-  // Restore submit button
-  const submitBtn = inquiryForm.querySelector('.inquiry-submit');
-  if (submitBtn) submitBtn.style.display = '';
+  inquiryTitle.textContent   = art.title;
+  inquirySubject.textContent = `Suggested subject: Enquiry – ${art.title}`;
+  inquiryCopy.textContent    = 'Copy';
 
   inquiryOverlay.classList.add('open');
   inquiryModal.classList.add('open');
-  document.getElementById('inqName').focus();
 }
 
 function closeInquiry() {
@@ -903,33 +896,11 @@ function closeInquiry() {
 inquiryClose.addEventListener('click', closeInquiry);
 inquiryOverlay.addEventListener('click', closeInquiry);
 
-inquiryForm.addEventListener('submit', (e) => {
-  e.preventDefault();
-  const name    = document.getElementById('inqName').value.trim();
-  const email   = document.getElementById('inqEmail').value.trim();
-  const message = document.getElementById('inqMsg').value.trim();
-
-  if (!name || !email) return;
-
-  const subject = `Inquiry: ${currentArtwork.title}`;
-  const body    = [
-    `Artwork: ${currentArtwork.title} (${currentArtwork.year})`,
-    `From: ${name}`,
-    `Reply-to: ${email}`,
-    '',
-    message || '(No additional message)',
-  ].join('\n');
-
-  window.location.href =
-    `mailto:radiantarrays@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-
-  // Show success note
-  const submitBtn = inquiryForm.querySelector('.inquiry-submit');
-  if (submitBtn) submitBtn.style.display = 'none';
-  const success = document.createElement('p');
-  success.className = 'form-success';
-  success.textContent = 'Your inquiry is ready — a draft email should open in your mail client.';
-  inquiryForm.appendChild(success);
+inquiryCopy.addEventListener('click', () => {
+  navigator.clipboard.writeText('radiantarrays@gmail.com').then(() => {
+    inquiryCopy.textContent = 'Copied';
+    setTimeout(() => { inquiryCopy.textContent = 'Copy'; }, 2000);
+  });
 });
 
 /* Escape closes inquiry too */
