@@ -144,6 +144,18 @@ const ARTWORKS = [
     image: 'images/cavea-oculi-2024-61cm.jpg',
   },
   {
+    id: 12,
+    title: 'Topographic Currents',
+    year: 2023,
+    medium: 'Mixed media',
+    dimensions: '120cm × 120cm',
+    w: 120, h: 120, isCircle: false,
+    available: 'enquire',
+    size: 'large',
+    type: 'non-illuminated',
+    image: 'images/Topographic_Currents-2023-120cmX120cm-non-illuminated.jpg',
+  },
+  {
     id: 11,
     title: 'Violet Drift',
     year: 2023,
