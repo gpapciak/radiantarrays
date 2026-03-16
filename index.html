@@ -253,34 +253,37 @@
       }));
       t += 700;
 
-      // 2 & 3 — Outer rings A then B (800 ms each)
-      staggerRing(outerNailsA, 800, t); t += 950;
-      staggerRing(outerNailsB, 800, t); t += 950;
+      // 2 — Outer rings A & B together (800 ms)
+      staggerRing(outerNailsA, 800, t);
+      staggerRing(outerNailsB, 800, t);
+      t += 950;
 
-      // 4 & 5 — Mid rings A then B (700 ms each)
-      staggerRing(midNailsA, 700, t); t += 850;
-      staggerRing(midNailsB, 700, t); t += 850;
+      // 3 — Mid rings A & B together (700 ms)
+      staggerRing(midNailsA, 700, t);
+      staggerRing(midNailsB, 700, t);
+      t += 850;
 
-      // 6 & 7 — Inner rings A then B (600 ms each)
-      staggerRing(innerNailsA, 600, t); t += 750;
-      staggerRing(innerNailsB, 600, t); t += 750;
+      // 4 — Inner rings A & B together (600 ms)
+      staggerRing(innerNailsA, 600, t);
+      staggerRing(innerNailsB, 600, t);
+      t += 750;
 
-      // 8 — Center aperture fades in (0.3 s)
+      // 5 — Center aperture fades in (375 ms, 25% slower)
       setTimeout(() => {
-        apertureG.style.transition = 'opacity 300ms ease';
+        apertureG.style.transition = 'opacity 375ms ease';
         apertureG.style.opacity    = 1;
       }, t);
-      t += 450;
+      t += 563;
 
-      // 9 — Shadow lines grow from center (1.2 s)
+      // 6 — Shadow lines grow from center (1500 ms, 25% slower)
       setTimeout(() => {
         shadowGroup.style.opacity = 1;
         shadowLines.forEach(line => {
-          line.style.transition       = 'stroke-dashoffset 1200ms cubic-bezier(0.25,0.46,0.45,0.94)';
+          line.style.transition       = 'stroke-dashoffset 1500ms cubic-bezier(0.25,0.46,0.45,0.94)';
           line.style.strokeDashoffset = 0;
         });
       }, t);
-      t += 1400;
+      t += 1750;
 
       // 10 — Breathing begins, CTA fades in
       setTimeout(() => {
