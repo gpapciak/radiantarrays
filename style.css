@@ -1073,6 +1073,17 @@ section { padding: 120px 0; }
   margin-bottom: 40px;
 }
 
+.about-text a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: rgba(232, 227, 218, 0.35);
+  transition: text-decoration-color var(--t);
+}
+.about-text a:hover {
+  text-decoration-color: rgba(232, 227, 218, 0.8);
+}
+
 .about-contact {
   display: flex;
   flex-direction: column;
