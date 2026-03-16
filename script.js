@@ -144,6 +144,18 @@ const ARTWORKS = [
     image: 'images/cavea-oculi-2024-61cm.jpg',
   },
   {
+    id: 13,
+    title: 'Circular Radiants No.1',
+    year: 2021,
+    medium: 'Mixed media',
+    dimensions: '61cm diameter',
+    w: 61, h: 61, isCircle: true,
+    available: 'in-collection',
+    size: 'medium',
+    type: 'illuminated',
+    image: 'images/Circular-Radiants-No.1-2021-61cm_diam-collection.jpg',
+  },
+  {
     id: 12,
     title: 'Topographic Currents',
     year: 2023,
