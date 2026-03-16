@@ -237,6 +237,7 @@ const ARTWORKS = [
     available: 'in-collection',
     size: 'smaller',
     type: 'non-illuminated',
+    note: 'Designed to rotate 360°, revealing new compositions and shadow patterns at every angle.',
     image: 'images/variable-axis-2020-46cm-collection-non-illum.jpg',
   },
   {
@@ -628,6 +629,7 @@ const state = {
         <div class="card-info">
           <p class="card-title">${art.title}</p>
           <p class="card-year">${art.year} &nbsp;·&nbsp; ${art.dimensions}</p>
+          ${art.note ? `<p class="card-note">${art.note}</p>` : ''}
           ${statusHTML}
         </div>`;
 
@@ -901,7 +903,8 @@ function renderLightbox() {
   lbDetails.innerHTML = `
     <dt>Year</dt><dd>${art.year}</dd>
     <dt>Medium</dt><dd>${art.medium}</dd>
-    <dt>Dimensions</dt><dd>${art.dimensions}</dd>`;
+    <dt>Dimensions</dt><dd>${art.dimensions}</dd>
+    ${art.note ? `<dt>Note</dt><dd>${art.note}</dd>` : ''}`;
 
   lbStatus.className   = 'lb-status ' + art.available;
   lbStatus.textContent = art.available === 'enquire' ? 'Available' : 'In Collection';

@@ -443,6 +443,13 @@ section { padding: 120px 0; }
   color: var(--text-muted);
   margin-bottom: 12px;
 }
+.card-note {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-style: italic;
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
 .card-enquire {
   display: inline-flex;
   align-items: center;
