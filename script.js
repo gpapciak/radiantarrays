@@ -19,7 +19,7 @@ const ARTWORKS = [
     dimensions: '95cm × 78cm',
     w: 95, h: 78, isCircle: false,
     available: 'enquire',
-    size: 'large',
+    size: 'larger',
     type: 'illuminated',
     image: 'images/singularity-field.jpg',
   },
@@ -31,7 +31,7 @@ const ARTWORKS = [
     dimensions: '46cm diameter',
     w: 46, h: 46, isCircle: true,
     available: 'enquire',
-    size: 'small',
+    size: 'smaller',
     type: 'illuminated',
     image: 'images/chromatic-wheel.jpg',
   },
@@ -43,7 +43,7 @@ const ARTWORKS = [
     dimensions: '46cm diameter',
     w: 46, h: 46, isCircle: true,
     available: 'enquire',
-    size: 'small',
+    size: 'smaller',
     type: 'illuminated',
     image: 'images/oxide-spirals.jpg',
   },
@@ -55,7 +55,7 @@ const ARTWORKS = [
     dimensions: '80cm × 80cm',
     w: 80, h: 80, isCircle: false,
     available: 'enquire',
-    size: 'large',
+    size: 'larger',
     type: 'illuminated',
     image: 'images/convergence-chamber.jpg',
   },
@@ -67,7 +67,7 @@ const ARTWORKS = [
     dimensions: '46cm diameter',
     w: 46, h: 46, isCircle: true,
     available: 'enquire',
-    size: 'small',
+    size: 'smaller',
     type: 'illuminated',
     image: 'images/radiant-axis.jpg',
   },
@@ -79,7 +79,7 @@ const ARTWORKS = [
     dimensions: '120cm × 60cm',
     w: 120, h: 60, isCircle: false,
     available: 'enquire',
-    size: 'large',
+    size: 'larger',
     type: 'illuminated',
     image: 'images/radiant-dialogue.jpg',
   },
@@ -163,7 +163,7 @@ const ARTWORKS = [
     dimensions: '120cm × 120cm',
     w: 120, h: 120, isCircle: false,
     available: 'enquire',
-    size: 'large',
+    size: 'larger',
     type: 'non-illuminated',
     image: 'images/Topographic_Currents-2023-120cmX120cm-non-illuminated.jpg',
   },
@@ -175,7 +175,7 @@ const ARTWORKS = [
     dimensions: '80cm × 40cm',
     w: 80, h: 40, isCircle: false,
     available: 'enquire',
-    size: 'large',
+    size: 'medium',
     type: 'non-illuminated',
     image: 'images/violet-drift-2023-40cmX80cm.JPG',
   },
@@ -826,7 +826,8 @@ function renderLightbox() {
   sizeVizCon.innerHTML = buildSizeViz(art);
 
   /* Inquire button */
-  inquireBtn.disabled = art.available !== 'enquire';
+  inquireBtn.style.display = art.available === 'enquire' ? '' : 'none';
+  inquireBtn.disabled = false;
   inquireBtn.onclick  = () => openInquiry(art);
 
   resetPZ();
